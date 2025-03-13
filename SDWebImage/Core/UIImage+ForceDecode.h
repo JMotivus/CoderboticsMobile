@@ -8,45 +8,56 @@
 
 #import "SDWebImageCompat.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
- UIImage category about force decode feature (avoid Image/IO's lazy decoding during rendering behavior).
+ * UIImage category that provides force decode functionality to avoid Image/IO's lazy decoding
+ * during rendering, which can improve performance by pre-decoding images.
  */
 @interface UIImage (ForceDecode)
 
 /**
- A bool value indicating whether the image has already been decoded. This can help to avoid extra force decode.
- Force decode is used for 2 cases:
- -- 1. for ImageIO created image (via `CGImageCreateWithImageSource` SPI), it's lazy and we trigger the decode before rendering
- -- 2. for non-ImageIO created image (via `CGImageCreate` API), we can ensure it's alignment is suitable to render on screen without copy by CoreAnimation
- @note For coder plugin developer, always use the SDImageCoderHelper's `colorSpaceGetDeviceRGB`/`preferredPixelFormat` to create CGImage.
- @note For more information why force decode, see: https://github.com/path/FastImageCache#byte-alignment
- @note From v5.17.0, the default value is always NO. Use `SDImageForceDecodePolicy` to control complicated policy.
+ * A boolean value indicating whether the image has already been decoded.
+ * This property helps avoid redundant force decoding operations.
+ *
+ * Force decoding is used in two scenarios:
+ * 1. For images created with ImageIO (via `CGImageCreateWithImageSource` SPI), which use lazy decoding,
+ *    we trigger the decode before rendering to improve performance
+ * 2. For images created without ImageIO (via `CGImageCreate` API), we ensure proper memory alignment
+ *    for efficient rendering by CoreAnimation without additional copying
+ *
+ * @note For coder plugin developers, always use SDImageCoderHelper's `colorSpaceGetDeviceRGB`/`preferredPixelFormat` 
+ *       to create CGImage instances.
+ * @note For more information about force decoding benefits, see: https://github.com/path/FastImageCache#byte-alignment
+ * @note From v5.17.0, the default value is always NO. Use `SDImageForceDecodePolicy` to control more complex policies.
  */
 @property (nonatomic, assign) BOOL sd_isDecoded;
 
 /**
- Decode the provided image. This is useful if you want to force decode the image before rendering to improve performance.
-
- @param image The image to be decoded
- @return The decoded image
+ * Decodes the provided image to improve rendering performance.
+ *
+ * @param image The image to be decoded
+ * @return The decoded image, or nil if the input was nil
  */
 + (nullable UIImage *)sd_decodedImageWithImage:(nullable UIImage *)image;
 
 /**
- Decode and scale down the provided image
-
- @param image The image to be decoded
- @return The decoded and scaled down image
+ * Decodes and scales down the provided image to reduce memory usage while maintaining quality.
+ *
+ * @param image The image to be decoded and scaled down
+ * @return The decoded and scaled down image, or nil if the input was nil
  */
 + (nullable UIImage *)sd_decodedAndScaledDownImageWithImage:(nullable UIImage *)image;
 
 /**
- Decode and scale down the provided image with limit bytes
- 
- @param image The image to be decoded
- @param bytes The limit bytes size. Provide 0 to use the build-in limit.
- @return The decoded and scaled down image
+ * Decodes and scales down the provided image with a specified memory limit.
+ * 
+ * @param image The image to be decoded and scaled down
+ * @param bytes The maximum memory size in bytes. Specify 0 to use the built-in default limit.
+ * @return The decoded and scaled down image, or nil if the input was nil
  */
 + (nullable UIImage *)sd_decodedAndScaledDownImageWithImage:(nullable UIImage *)image limitBytes:(NSUInteger)bytes;
 
 @end
+
+NS_ASSUME_NONNULL_END

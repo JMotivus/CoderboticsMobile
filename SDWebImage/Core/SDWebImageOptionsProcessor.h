@@ -12,51 +12,61 @@
 
 @class SDWebImageOptionsResult;
 
+/**
+ * Block definition for options processor.
+ * @param url The URL to the image
+ * @param options A mask to specify options to use for this request
+ * @param context A context containing additional options
+ * @return The processed options result
+ */
 typedef SDWebImageOptionsResult * _Nullable(^SDWebImageOptionsProcessorBlock)(NSURL * _Nullable url, SDWebImageOptions options, SDWebImageContext * _Nullable context);
 
 /**
- The options result contains both options and context.
+ * The options result contains both options and context.
+ * This class encapsulates the parameters used for image loading operations.
  */
 @interface SDWebImageOptionsResult : NSObject
 
 /**
- WebCache options.
+ * WebCache options.
  */
 @property (nonatomic, assign, readonly) SDWebImageOptions options;
 
 /**
- Context options.
+ * Context options.
  */
 @property (nonatomic, copy, readonly, nullable) SDWebImageContext *context;
 
 /**
- Create a new options result.
-
- @param options options
- @param context context
- @return The options result contains both options and context.
+ * Create a new options result.
+ *
+ * @param options WebCache options
+ * @param context Context options
+ * @return The options result containing both options and context
  */
-- (nonnull instancetype)initWithOptions:(SDWebImageOptions)options context:(nullable SDWebImageContext *)context;
+- (nonnull instancetype)initWithOptions:(SDWebImageOptions)options 
+                                context:(nullable SDWebImageContext *)context;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
 @end
 
 /**
- This is the protocol for options processor.
- Options processor can be used, to control the final result for individual image request's `SDWebImageOptions` and `SDWebImageContext`
- Implements the protocol to have a global control for each indivadual image request's option.
+ * Protocol for options processor.
+ * Options processor can be used to control the final result for individual image request's
+ * `SDWebImageOptions` and `SDWebImageContext`. Implement this protocol to have global control
+ * for each individual image request's options.
  */
 @protocol SDWebImageOptionsProcessor <NSObject>
 
 /**
- Return the processed options result for specify image URL, with its options and context
-
- @param url The URL to the image
- @param options A mask to specify options to use for this request
- @param context A context contains different options to perform specify changes or processes, see `SDWebImageContextOption`. This hold the extra objects which `options` enum can not hold.
- @return The processed result, contains both options and context
+ * Return the processed options result for a specific image URL, with its options and context
+ *
+ * @param url The URL to the image
+ * @param options A mask to specify options to use for this request
+ * @param context A context containing different options to perform specific changes or processes
+ * @return The processed result, containing both options and context
  */
 - (nullable SDWebImageOptionsResult *)processedResultForURL:(nullable NSURL *)url
                                                     options:(SDWebImageOptions)options
@@ -65,14 +75,28 @@ typedef SDWebImageOptionsResult * _Nullable(^SDWebImageOptionsProcessorBlock)(NS
 @end
 
 /**
- A options processor class with block.
+ * A concrete options processor implementation that uses a block.
+ * This allows for easy creation of options processors using blocks.
  */
 @interface SDWebImageOptionsProcessor : NSObject<SDWebImageOptionsProcessor>
 
-- (nonnull instancetype)initWithBlock:(nonnull SDWebImageOptionsProcessorBlock)block;
+/**
+ * Create an options processor with the provided block.
+ *
+ * @param block The block to be called for processing options
+ * @return A new options processor instance
+ */
 + (nonnull instancetype)optionsProcessorWithBlock:(nonnull SDWebImageOptionsProcessorBlock)block;
 
+/**
+ * Initialize an options processor with the provided block.
+ *
+ * @param block The block to be called for processing options
+ * @return A new options processor instance
+ */
+- (nonnull instancetype)initWithBlock:(nonnull SDWebImageOptionsProcessorBlock)block;
+
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
 @end

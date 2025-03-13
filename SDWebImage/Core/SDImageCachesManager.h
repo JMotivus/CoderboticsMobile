@@ -9,72 +9,101 @@
 #import <Foundation/Foundation.h>
 #import "SDImageCacheDefine.h"
 
-/// Policy for cache operation
+/**
+ * Policy for cache operations in SDImageCachesManager.
+ * Defines how operations are executed across multiple caches.
+ */
 typedef NS_ENUM(NSUInteger, SDImageCachesManagerOperationPolicy) {
-    SDImageCachesManagerOperationPolicySerial, // process all caches serially (from the highest priority to the lowest priority cache by order)
-    SDImageCachesManagerOperationPolicyConcurrent, // process all caches concurrently
-    SDImageCachesManagerOperationPolicyHighestOnly, // process the highest priority cache only
-    SDImageCachesManagerOperationPolicyLowestOnly // process the lowest priority cache only
+    /**
+     * Process all caches serially from highest to lowest priority.
+     * Operations stop when a successful result is found.
+     */
+    SDImageCachesManagerOperationPolicySerial,
+    
+    /**
+     * Process all caches concurrently.
+     * All caches will be operated on regardless of individual results.
+     */
+    SDImageCachesManagerOperationPolicyConcurrent,
+    
+    /**
+     * Process only the highest priority cache (last added).
+     * Ignores all other caches in the manager.
+     */
+    SDImageCachesManagerOperationPolicyHighestOnly,
+    
+    /**
+     * Process only the lowest priority cache (first added).
+     * Ignores all other caches in the manager.
+     */
+    SDImageCachesManagerOperationPolicyLowestOnly
 };
 
 /**
- A caches manager to manage multiple caches.
+ * A manager that coordinates operations across multiple cache instances.
+ * Allows for different operation policies for different cache operations.
  */
 @interface SDImageCachesManager : NSObject <SDImageCache>
 
 /**
- Returns the global shared caches manager instance. By default we will set [`SDImageCache.sharedImageCache`] into the caches array.
+ * Returns the global shared caches manager instance.
+ * By default, this includes the `SDImageCache.sharedImageCache` in the caches array.
+ *
+ * @return The shared manager instance
  */
 @property (nonatomic, class, readonly, nonnull) SDImageCachesManager *sharedManager;
 
-// These are op policy for cache manager.
+#pragma mark - Operation Policies
 
 /**
- Operation policy for query op.
- Defaults to `Serial`, means query all caches serially (one completion called then next begin) until one cache query success (`image` != nil).
+ * Operation policy for query operations.
+ * Defaults to `Serial`, which queries caches serially until one returns a non-nil image.
  */
 @property (nonatomic, assign) SDImageCachesManagerOperationPolicy queryOperationPolicy;
 
 /**
- Operation policy for store op.
- Defaults to `HighestOnly`, means store to the highest priority cache only.
+ * Operation policy for store operations.
+ * Defaults to `HighestOnly`, which stores only in the highest priority cache.
  */
 @property (nonatomic, assign) SDImageCachesManagerOperationPolicy storeOperationPolicy;
 
 /**
- Operation policy for remove op.
- Defaults to `Concurrent`, means remove all caches concurrently.
+ * Operation policy for remove operations.
+ * Defaults to `Concurrent`, which removes from all caches concurrently.
  */
 @property (nonatomic, assign) SDImageCachesManagerOperationPolicy removeOperationPolicy;
 
 /**
- Operation policy for contains op.
- Defaults to `Serial`, means check all caches serially (one completion called then next begin) until one cache check success (`containsCacheType` != None).
+ * Operation policy for contains operations.
+ * Defaults to `Serial`, which checks caches serially until one returns a non-None containsCacheType.
  */
 @property (nonatomic, assign) SDImageCachesManagerOperationPolicy containsOperationPolicy;
 
 /**
- Operation policy for clear op.
- Defaults to `Concurrent`, means clear all caches concurrently.
+ * Operation policy for clear operations.
+ * Defaults to `Concurrent`, which clears all caches concurrently.
  */
 @property (nonatomic, assign) SDImageCachesManagerOperationPolicy clearOperationPolicy;
 
 /**
- All caches in caches manager. The caches array is a priority queue, which means the later added cache will have the highest priority
+ * All caches managed by this manager.
+ * The caches array acts as a priority queue - the later added cache has higher priority.
  */
 @property (nonatomic, copy, nullable) NSArray<id<SDImageCache>> *caches;
 
+#pragma mark - Cache Management
+
 /**
- Add a new cache to the end of caches array. Which has the highest priority.
- 
- @param cache cache
+ * Adds a new cache to the end of the caches array, giving it the highest priority.
+ *
+ * @param cache The cache to add
  */
 - (void)addCache:(nonnull id<SDImageCache>)cache;
 
 /**
- Remove a cache in the caches array.
- 
- @param cache cache
+ * Removes a specific cache from the caches array.
+ *
+ * @param cache The cache to remove
  */
 - (void)removeCache:(nonnull id<SDImageCache>)cache;
 

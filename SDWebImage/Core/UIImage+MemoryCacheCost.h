@@ -9,18 +9,24 @@
 #import "SDWebImageCompat.h"
 
 /**
- UIImage category for memory cache cost.
+ * UIImage category for memory cache cost.
+ * This category adds memory cost calculation functionality to UIImage,
+ * which is used by the image cache system to manage memory usage.
  */
 @interface UIImage (MemoryCacheCost)
 
 /**
- The memory cache cost for specify image used by image cache. The cost function is the bytes size held in memory.
- If you set some associated object to `UIImage`, you can set the custom value to indicate the memory cost.
- 
- For `UIImage`, this method return the single frame bytes size when `image.images` is nil for static image. Return full frame bytes size when `image.images` is not nil for animated image.
- For `NSImage`, this method return the single frame bytes size because `NSImage` does not store all frames in memory.
- @note Note that because of the limitations of category this property can get out of sync if you create another instance with CGImage or other methods.
- @note For custom animated class conforms to `SDAnimatedImage`, you can override this getter method in your subclass to return a more proper value instead, which representing the current frame's total bytes.
+ * The memory cache cost for the image used by image cache.
+ * The cost function represents the bytes size held in memory.
+ *
+ * Behavior:
+ * - For static images (`image.images` is nil): Returns the single frame bytes size
+ * - For animated images (`image.images` is not nil): Returns the full frame bytes size
+ * - For `NSImage`: Returns the single frame bytes size (NSImage doesn't store all frames in memory)
+ *
+ * @note If you set associated objects to `UIImage`, you can set a custom value to indicate the memory cost.
+ * @note This property can get out of sync if you create another instance with CGImage or other methods due to category limitations.
+ * @note Custom animated classes conforming to `SDAnimatedImage` can override this getter in their subclass to return a more accurate value.
  */
 @property (assign, nonatomic) NSUInteger sd_memoryCost;
 

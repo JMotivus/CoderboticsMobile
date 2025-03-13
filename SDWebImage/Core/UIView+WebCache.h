@@ -15,16 +15,21 @@
 #import "UIView+WebCacheState.h"
 
 /**
- The value specify that the image progress unit count cannot be determined because the progressBlock is not been called.
+ * The value specify that the image progress unit count cannot be determined because the progressBlock is not been called.
  */
 FOUNDATION_EXPORT const int64_t SDWebImageProgressUnitCountUnknown; /* 1LL */
 
+/**
+ * Block used for custom image setting logic.
+ */
 typedef void(^SDSetImageBlock)(UIImage * _Nullable image, NSData * _Nullable imageData, SDImageCacheType cacheType, NSURL * _Nullable imageURL);
 
 /**
- Integrates SDWebImage async downloading and caching of remote images with UIView subclass.
+ * Integrates SDWebImage async downloading and caching of remote images with UIView subclass.
  */
 @interface UIView (WebCache)
+
+#pragma mark - Operation Keys
 
 /**
  * Get the current image operation key. Operation key is used to identify the different queries for one view instance (like UIButton).
@@ -36,7 +41,7 @@ typedef void(^SDSetImageBlock)(UIImage * _Nullable image, NSData * _Nullable ima
  */
 @property (nonatomic, strong, readonly, nullable) NSString *sd_latestOperationKey;
 
-#pragma mark - State
+#pragma mark - Image State
 
 /**
  * Get the current image URL.
@@ -50,12 +55,18 @@ typedef void(^SDSetImageBlock)(UIImage * _Nullable image, NSData * _Nullable ima
 /**
  * The current image loading progress associated to the view. The unit count is the received size and excepted size of download.
  * The `totalUnitCount` and `completedUnitCount` will be reset to 0 after a new image loading start (change from current queue). And they will be set to `SDWebImageProgressUnitCountUnknown` if the progressBlock not been called but the image loading success to mark the progress finished (change from main queue).
- * @note You can use Key-Value Observing on the progress, but you should take care that the change to progress is from a background queue during download(the same as progressBlock). If you want to using KVO and update the UI, make sure to dispatch on the main queue. And it's recommend to use some KVO libs like KVOController because it's more safe and easy to use.
- * @note The getter will create a progress instance if the value is nil. But by default, we don't create one. If you need to use Key-Value Observing, you must trigger the getter or set a custom progress instance before the loading start. The default value is nil.
+ * 
+ * @note You can use Key-Value Observing on the progress, but you should take care that the change to progress is from a background queue during download(the same as progressBlock). 
+ * If you want to using KVO and update the UI, make sure to dispatch on the main queue. And it's recommend to use some KVO libs like KVOController because it's more safe and easy to use.
+ * @note The getter will create a progress instance if the value is nil. But by default, we don't create one. 
+ * If you need to use Key-Value Observing, you must trigger the getter or set a custom progress instance before the loading start. The default value is nil.
  * @note Note that because of the limitations of categories this property can get out of sync if you update the progress directly.
- * @warning This property should be only used for single state view, like `UIImageView` without highlighted state. For stateful view like `UIBUtton` (one view can have multiple images loading), use `sd_imageLoadStateForKey:` instead. See `UIView+WebCacheState.h` for more information.
+ * @warning This property should be only used for single state view, like `UIImageView` without highlighted state. 
+ * For stateful view like `UIBUtton` (one view can have multiple images loading), use `sd_imageLoadStateForKey:` instead. See `UIView+WebCacheState.h` for more information.
  */
 @property (nonatomic, strong, null_resettable) NSProgress *sd_imageProgress;
+
+#pragma mark - Image Loading
 
 /**
  * Set the imageView `image` with an `url` and optionally a placeholder image.
@@ -90,6 +101,8 @@ typedef void(^SDSetImageBlock)(UIImage * _Nullable image, NSData * _Nullable ima
                                                       progress:(nullable SDImageLoaderProgressBlock)progressBlock
                                                      completed:(nullable SDInternalCompletionBlock)completedBlock;
 
+#pragma mark - Cancel Operations
+
 /**
  * Cancel the latest image load, using the `sd_latestOperationKey` as operation key
  * This simply translate to `[self sd_cancelImageLoadOperationWithKey:self.sd_latestOperationKey]`
@@ -110,19 +123,21 @@ typedef void(^SDSetImageBlock)(UIImage * _Nullable image, NSData * _Nullable ima
 #pragma mark - Image Transition
 
 /**
- The image transition when image load finished. See `SDWebImageTransition`.
- If you specify nil, do not do transition. Defaults to nil.
- @warning This property should be only used for single state view, like `UIImageView` without highlighted state. For stateful view like `UIBUtton` (one view can have multiple images loading), write your own implementation in `setImageBlock:`, and check current stateful view's state to render the UI.
+ * The image transition when image load finished. See `SDWebImageTransition`.
+ * If you specify nil, do not do transition. Defaults to nil.
+ * @warning This property should be only used for single state view, like `UIImageView` without highlighted state. 
+ * For stateful view like `UIBUtton` (one view can have multiple images loading), write your own implementation in `setImageBlock:`, and check current stateful view's state to render the UI.
  */
 @property (nonatomic, strong, nullable) SDWebImageTransition *sd_imageTransition;
 
 #pragma mark - Image Indicator
 
 /**
- The image indicator during the image loading. If you do not need indicator, specify nil. Defaults to nil
- The setter will remove the old indicator view and add new indicator view to current view's subview.
- @note Because this is UI related, you should access only from the main queue.
- @warning This property should be only used for single state view, like `UIImageView` without highlighted state. For stateful view like `UIBUtton` (one view can have multiple images loading), write your own implementation in `setImageBlock:`, and check current stateful view's state to render the UI.
+ * The image indicator during the image loading. If you do not need indicator, specify nil. Defaults to nil
+ * The setter will remove the old indicator view and add new indicator view to current view's subview.
+ * @note Because this is UI related, you should access only from the main queue.
+ * @warning This property should be only used for single state view, like `UIImageView` without highlighted state. 
+ * For stateful view like `UIBUtton` (one view can have multiple images loading), write your own implementation in `setImageBlock:`, and check current stateful view's state to render the UI.
  */
 @property (nonatomic, strong, nullable) id<SDWebImageIndicator> sd_imageIndicator;
 

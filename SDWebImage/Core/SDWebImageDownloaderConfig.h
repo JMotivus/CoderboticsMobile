@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 #import "SDWebImageCompat.h"
 
-/// Operation execution order
+/**
+ * Operation execution order for download operations
+ */
 typedef NS_ENUM(NSInteger, SDWebImageDownloaderExecutionOrder) {
     /**
      * Default value. All download operations will execute in queue style (first-in-first-out).
@@ -23,16 +25,20 @@ typedef NS_ENUM(NSInteger, SDWebImageDownloaderExecutionOrder) {
 };
 
 /**
- The class contains all the config for image downloader
- @note This class conform to NSCopying, make sure to add the property in `copyWithZone:` as well.
+ * Configuration class for image downloader settings
+ * @note This class conforms to NSCopying, make sure to add any new properties in `copyWithZone:` as well.
  */
 @interface SDWebImageDownloaderConfig : NSObject <NSCopying>
 
 /**
- Gets the default downloader config used for shared instance or initialization when it does not provide any downloader config. Such as `SDWebImageDownloader.sharedDownloader`.
- @note You can modify the property on default downloader config, which can be used for later created downloader instance. The already created downloader instance does not get affected.
+ * Gets the default downloader config used for shared instance or initialization when no config is provided.
+ * Used by instances like `SDWebImageDownloader.sharedDownloader`.
+ * @note You can modify properties on the default config to affect future downloader instances.
+ * Existing downloader instances will not be affected by these changes.
  */
 @property (nonatomic, class, readonly, nonnull) SDWebImageDownloaderConfig *defaultDownloaderConfig;
+
+#pragma mark - Network Configuration
 
 /**
  * The maximum number of concurrent downloads.
@@ -47,66 +53,76 @@ typedef NS_ENUM(NSInteger, SDWebImageDownloaderExecutionOrder) {
 @property (nonatomic, assign) NSTimeInterval downloadTimeout;
 
 /**
- * The minimum interval about progress percent during network downloading. Which means the next progress callback and current progress callback's progress percent difference should be larger or equal to this value. However, the final finish download progress callback does not get effected.
- * The value should be 0.0-1.0.
- * @note If you're using progressive decoding feature, this will also effect the image refresh rate.
- * @note This value may enhance the performance if you don't want progress callback too frequently.
- * Defaults to 0, which means each time we receive the new data from URLSession, we callback the progressBlock immediately.
- */
-@property (nonatomic, assign) double minimumProgressInterval;
-
-/**
- * The custom session configuration in use by NSURLSession. If you don't provide one, we will use `defaultSessionConfiguration` instead.
- * Defatuls to nil.
- * @note This property does not support dynamic changes, means it's immutable after the downloader instance initialized.
+ * The custom session configuration used by NSURLSession.
+ * If not provided, `defaultSessionConfiguration` will be used.
+ * Defaults to nil.
+ * @note This property is immutable after the downloader instance is initialized.
  */
 @property (nonatomic, strong, nullable) NSURLSessionConfiguration *sessionConfiguration;
 
-/**
- * Gets/Sets a subclass of `SDWebImageDownloaderOperation` as the default
- * `NSOperation` to be used each time SDWebImage constructs a request
- * operation to download an image.
- * Defaults to nil.
- * @note Passing `NSOperation<SDWebImageDownloaderOperation>` to set as default. Passing `nil` will revert to `SDWebImageDownloaderOperation`.
- */
-@property (nonatomic, assign, nullable) Class operationClass;
+#pragma mark - Authentication
 
 /**
- * Changes download operations execution order.
- * Defaults to `SDWebImageDownloaderFIFOExecutionOrder`.
- */
-@property (nonatomic, assign) SDWebImageDownloaderExecutionOrder executionOrder;
-
-/**
- * Set the default URL credential to be set for request operations.
+ * The default URL credential for request operations.
  * Defaults to nil.
  */
 @property (nonatomic, copy, nullable) NSURLCredential *urlCredential;
 
 /**
- * Set username using for HTTP Basic authentication.
+ * Username for HTTP Basic authentication.
  * Defaults to nil.
  */
 @property (nonatomic, copy, nullable) NSString *username;
 
 /**
- * Set password using for HTTP Basic authentication.
+ * Password for HTTP Basic authentication.
  * Defaults to nil.
  */
 @property (nonatomic, copy, nullable) NSString *password;
 
+#pragma mark - Operation Settings
+
 /**
- * Set the acceptable HTTP Response status code. The status code which beyond the range will mark the download operation failed.
- * For example, if we config [200, 400) but server response is 503, the download will fail with error code `SDWebImageErrorInvalidDownloadStatusCode`.
- * Defaults to [200,400). Nil means no validation at all.
+ * The minimum interval for progress updates during network downloading.
+ * The next progress callback will only be triggered when the progress percent difference
+ * is greater than or equal to this value. Final completion callbacks are not affected.
+ * Value should be between 0.0 and 1.0.
+ * @note This affects progressive image decoding refresh rate.
+ * @note Higher values may improve performance by reducing callback frequency.
+ * Defaults to 0, which means progress callbacks occur immediately on new data.
+ */
+@property (nonatomic, assign) double minimumProgressInterval;
+
+/**
+ * Subclass of `SDWebImageDownloaderOperation` to use as the default operation
+ * for downloading images.
+ * Defaults to nil (which uses `SDWebImageDownloaderOperation`).
+ * @note Set this to a class conforming to `NSOperation<SDWebImageDownloaderOperation>`.
+ */
+@property (nonatomic, assign, nullable) Class operationClass;
+
+/**
+ * Download operations execution order.
+ * Defaults to `SDWebImageDownloaderFIFOExecutionOrder`.
+ */
+@property (nonatomic, assign) SDWebImageDownloaderExecutionOrder executionOrder;
+
+#pragma mark - Response Validation
+
+/**
+ * Acceptable HTTP response status codes.
+ * Status codes outside this range will mark the download operation as failed
+ * with error code `SDWebImageErrorInvalidDownloadStatusCode`.
+ * Defaults to [200,400). Set to nil to disable status code validation.
  */
 @property (nonatomic, copy, nullable) NSIndexSet *acceptableStatusCodes;
 
 /**
- * Set the acceptable HTTP Response content type. The content type beyond the set will mark the download operation failed.
- * For example, if we config ["image/png"] but server response is "application/json", the download will fail with error code `SDWebImageErrorInvalidDownloadContentType`.
- * Normally you don't need this for image format detection because we use image's data file signature magic bytes: https://en.wikipedia.org/wiki/List_of_file_signatures
- * Defaults to nil. Nil means no validation at all.
+ * Acceptable HTTP response content types.
+ * Content types not in this set will mark the download operation as failed
+ * with error code `SDWebImageErrorInvalidDownloadContentType`.
+ * Defaults to nil (no validation). Usually not needed as image format detection
+ * uses file signature magic bytes.
  */
 @property (nonatomic, copy, nullable) NSSet<NSString *> *acceptableContentTypes;
 

@@ -9,31 +9,38 @@
 #import "SDImageLoader.h"
 
 /**
- A loaders manager to manage multiple loaders
+ * A manager that coordinates multiple image loaders with priority handling.
+ * Loaders are arranged in a priority queue where the most recently added loader
+ * has the highest priority.
  */
 @interface SDImageLoadersManager : NSObject <SDImageLoader>
 
 /**
- Returns the global shared loaders manager instance. By default we will set [`SDWebImageDownloader.sharedDownloader`] into the loaders array.
+ * Returns the global shared loaders manager instance.
+ * By default, this includes [`SDWebImageDownloader.sharedDownloader`] in the loaders array.
+ *
+ * @return The singleton instance of SDImageLoadersManager
  */
 @property (nonatomic, class, readonly, nonnull) SDImageLoadersManager *sharedManager;
 
 /**
- All image loaders in manager. The loaders array is a priority queue, which means the later added loader will have the highest priority
+ * The array of image loaders managed by this instance.
+ * This array acts as a priority queue - the loader at the highest index has the highest priority.
+ * When loading an image, loaders are tried in order from highest to lowest priority.
  */
-@property (nonatomic, copy, nullable) NSArray<id<SDImageLoader>>* loaders;
+@property (nonatomic, copy, nullable) NSArray<id<SDImageLoader>> *loaders;
 
 /**
- Add a new image loader to the end of loaders array. Which has the highest priority.
- 
- @param loader loader
+ * Adds a new image loader to the end of the loaders array, giving it the highest priority.
+ *
+ * @param loader The loader to add. Must not be nil.
  */
 - (void)addLoader:(nonnull id<SDImageLoader>)loader;
 
 /**
- Remove an image loader in the loaders array.
- 
- @param loader loader
+ * Removes an image loader from the loaders array.
+ *
+ * @param loader The loader to remove. Must not be nil.
  */
 - (void)removeLoader:(nonnull id<SDImageLoader>)loader;
 

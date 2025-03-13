@@ -17,6 +17,7 @@ typedef NSMutableDictionary<SDImageCoderOption, id> SDImageCoderMutableOptions;
 
 #pragma mark - Image Decoding Options
 // These options are for image decoding
+
 /**
  A Boolean value indicating whether to decode the first frame only for animated image during decoding. (NSNumber). If not provide, decode animated image if need.
  @note works for `SDImageCoder`.
@@ -97,6 +98,7 @@ FOUNDATION_EXPORT SDImageCoderOption _Nonnull const SDImageCoderDecodeScaleDownL
 FOUNDATION_EXPORT SDImageCoderOption _Nonnull const SDImageCoderDecodeToHDR;
 
 #pragma mark - Image Encoding Options
+
 /**
  A NSUInteger (`SDImageHDRType.rawValue`) value (stored inside NSNumber) to provide converting to HDR during encoding. Read the below carefully to choose the value.
  @note 0(`SDImageHDRTypeSDR`) means SDR; 1(`SDImageHDRTypeISOHDR`) means ISO HDR (at least using 10 bits per components or above, supported by AVIF/HEIF/JPEG-XL); 2(`SDImageHDRTypeISOGainMap`) means ISO Gain Map HDR (may use 8 bits per components, supported by AVIF/HEIF/JPEG-XL, as well as traditional JPEG)
@@ -113,6 +115,7 @@ FOUNDATION_EXPORT SDImageCoderOption _Nonnull const SDImageCoderEncodeToHDR;
  @note works for `SDImageCoder`.
  */
 FOUNDATION_EXPORT SDImageCoderOption _Nonnull const SDImageCoderEncodeFirstFrameOnly;
+
 /**
  A double value between 0.0-1.0 indicating the encode compression quality to produce the image data. 1.0 resulting in no compression and 0.0 resulting in the maximum compression possible. If not provide, use 1.0. (NSNumber)
  @note works for `SDImageCoder`

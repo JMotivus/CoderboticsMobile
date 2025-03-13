@@ -12,12 +12,14 @@
 #import <os/log.h>
 #import "SDmetamacros.h"
 
+// Define which platforms should use os_unfair_lock directly
 #define SD_USE_OS_UNFAIR_LOCK TARGET_OS_MACCATALYST ||\
     (__IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_10_0) ||\
     (__MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_12) ||\
     (__TV_OS_VERSION_MIN_REQUIRED >= __TVOS_10_0) ||\
     (__WATCH_OS_VERSION_MIN_REQUIRED >= __WATCHOS_3_0)
 
+// Lock declaration macros
 #ifndef SD_LOCK_DECLARE
 #if SD_USE_OS_UNFAIR_LOCK
 #define SD_LOCK_DECLARE(lock) os_unfair_lock lock
@@ -36,6 +38,7 @@ static OSSpinLock lock##_deprecated;
 #endif
 #endif
 
+// Lock initialization and operation macros
 #ifndef SD_LOCK_INIT
 #if SD_USE_OS_UNFAIR_LOCK
 #define SD_LOCK_INIT(lock) lock = OS_UNFAIR_LOCK_INIT
@@ -63,10 +66,12 @@ else OSSpinLockUnlock(&lock##_deprecated);
 #endif
 #endif
 
+// Utility macros
 #ifndef SD_OPTIONS_CONTAINS
 #define SD_OPTIONS_CONTAINS(options, value) (((options) & (value)) == (value))
 #endif
 
+// String conversion macros
 #ifndef SD_CSTRING
 #define SD_CSTRING(str) #str
 #endif
@@ -75,10 +80,12 @@ else OSSpinLockUnlock(&lock##_deprecated);
 #define SD_NSSTRING(str) @(SD_CSTRING(str))
 #endif
 
+// Selector creation for private APIs
 #ifndef SD_SEL_SPI
 #define SD_SEL_SPI(name) NSSelectorFromString([NSString stringWithFormat:@"_%@", SD_NSSTRING(name)])
 #endif
 
+// Logging utilities
 FOUNDATION_EXPORT os_log_t sd_getDefaultLog(void);
 
 #ifndef SD_LOG
@@ -86,6 +93,7 @@ FOUNDATION_EXPORT os_log_t sd_getDefaultLog(void);
 else NSLog(@(_log), ##__VA_ARGS__);
 #endif
 
+// Memory management macros
 #ifndef weakify
 #define weakify(...) \
 sd_keywordify \
@@ -107,12 +115,14 @@ CONTEXT __typeof__(VAR) metamacro_concat(VAR, _weak_) = (VAR);
 #define sd_strongify_(INDEX, VAR) \
 __strong __typeof__(VAR) VAR = metamacro_concat(VAR, _weak_);
 
+// Debug helper macros
 #if DEBUG
 #define sd_keywordify autoreleasepool {}
 #else
 #define sd_keywordify try {} @catch (...) {}
 #endif
 
+// Cleanup block utilities
 #ifndef onExit
 #define onExit \
 sd_keywordify \
@@ -134,16 +144,14 @@ extern "C" {
  * receiver and key path:
  *
  * @code
-
-NSString *UTF8StringPath = @keypath(str.lowercaseString.UTF8String);
-// => @"lowercaseString.UTF8String"
-
-NSString *versionPath = @keypath(NSObject, version);
-// => @"version"
-
-NSString *lowercaseStringPath = @keypath(NSString.new, lowercaseString);
-// => @"lowercaseString"
-
+ * NSString *UTF8StringPath = @keypath(str.lowercaseString.UTF8String);
+ * // => @"lowercaseString.UTF8String"
+ *
+ * NSString *versionPath = @keypath(NSObject, version);
+ * // => @"version"
+ *
+ * NSString *lowercaseStringPath = @keypath(NSString.new, lowercaseString);
+ * // => @"lowercaseString"
  * @endcode
  *
  * ... the macro returns an \c NSString containing all but the first path
@@ -175,15 +183,12 @@ NSString *lowercaseStringPath = @keypath(NSString.new, lowercaseString);
  * receiver, collection object receiver and related keypaths:
  *
  * @code
- 
- NSString *employeesFirstNamePath = @collectionKeypath(department.employees, Employee.new, firstName)
- // => @"employees.firstName"
- 
- NSString *employeesFirstNamePath = @collectionKeypath(Department.new, employees, Employee.new, firstName)
- // => @"employees.firstName"
-
+ * NSString *employeesFirstNamePath = @collectionKeypath(department.employees, Employee.new, firstName)
+ * // => @"employees.firstName"
+ * 
+ * NSString *employeesFirstNamePath = @collectionKeypath(Department.new, employees, Employee.new, firstName)
+ * // => @"employees.firstName"
  * @endcode
- *
  */
 #define collectionKeypath(...) \
     metamacro_if_eq(3, metamacro_argcount(__VA_ARGS__))(collectionKeypath3(__VA_ARGS__))(collectionKeypath4(__VA_ARGS__))

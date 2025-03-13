@@ -15,7 +15,5 @@ FOUNDATION_EXPORT double SDWebImageMapKitVersionNumber;
 //! Project version string for SDWebImageMapKit.
 FOUNDATION_EXPORT const unsigned char SDWebImageMapKitVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <SDWebImageMapKit/PublicHeader.h>
-
-// MapKit
+// Public headers
 #import <SDWebImageMapKit/MKAnnotationView+WebCache.h>

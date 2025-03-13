@@ -9,31 +9,59 @@
 #import <Foundation/Foundation.h>
 #import "SDWebImageCompat.h"
 
+/**
+ * Block definition for cache serialization.
+ * @param image The loaded image to be serialized
+ * @param data The original loaded image data (may be nil for transformed images)
+ * @param imageURL The URL of the image
+ * @return The serialized data to be stored in disk cache
+ */
 typedef NSData * _Nullable(^SDWebImageCacheSerializerBlock)(UIImage * _Nonnull image, NSData * _Nullable data, NSURL * _Nullable imageURL);
 
 /**
- This is the protocol for cache serializer.
- We can use a block to specify the cache serializer. But Using protocol can make this extensible, and allow Swift user to use it easily instead of using `@convention(block)` to store a block into context options.
+ * Protocol for cache serializer.
+ * This protocol makes the serialization process extensible and allows Swift users
+ * to implement it without needing to use `@convention(block)` to store blocks in context options.
  */
 @protocol SDWebImageCacheSerializer <NSObject>
 
-/// Provide the image data associated to the image and store to disk cache
-/// @param image The loaded image
-/// @param data The original loaded image data. May be nil when image is transformed (UIImage.sd_isTransformed = YES)
-/// @param imageURL The image URL
-- (nullable NSData *)cacheDataWithImage:(nonnull UIImage *)image originalData:(nullable NSData *)data imageURL:(nullable NSURL *)imageURL;
+/**
+ * Provides the image data to be stored in disk cache
+ * @param image The loaded image
+ * @param data The original loaded image data. May be nil when image is transformed (UIImage.sd_isTransformed = YES)
+ * @param imageURL The image URL
+ * @return The data to be stored in disk cache
+ */
+- (nullable NSData *)cacheDataWithImage:(nonnull UIImage *)image 
+                           originalData:(nullable NSData *)data 
+                               imageURL:(nullable NSURL *)imageURL;
 
 @end
 
 /**
- A cache serializer class with block.
+ * A concrete implementation of SDWebImageCacheSerializer using blocks.
+ * This class wraps a block-based serializer in the protocol interface.
  */
 @interface SDWebImageCacheSerializer : NSObject <SDWebImageCacheSerializer>
 
-- (nonnull instancetype)initWithBlock:(nonnull SDWebImageCacheSerializerBlock)block;
+/**
+ * Creates a cache serializer with the specified block.
+ * @param block The serializer block to use
+ * @return A new cache serializer instance
+ */
 + (nonnull instancetype)cacheSerializerWithBlock:(nonnull SDWebImageCacheSerializerBlock)block;
 
+/**
+ * Initializes a cache serializer with the specified block.
+ * @param block The serializer block to use
+ * @return A new cache serializer instance
+ */
+- (nonnull instancetype)initWithBlock:(nonnull SDWebImageCacheSerializerBlock)block;
+
+/**
+ * Default initializers are unavailable. Use the block-based initializers instead.
+ */
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
 @end

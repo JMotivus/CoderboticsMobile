@@ -8,7 +8,13 @@
 
 #import "SDWebImageCompat.h"
 
-/// Copy the associated object from source image to target image. The associated object including all the category read/write properties.
-/// @param source source
-/// @param target target
+/**
+ * Copies all associated objects from a source image to a target image.
+ * 
+ * This includes all category read/write properties that may have been
+ * attached to the source image through Objective-C associated objects.
+ *
+ * @param source The source UIImage containing the associated objects to copy
+ * @param target The target UIImage to which the associated objects will be copied
+ */
 FOUNDATION_EXPORT void SDImageCopyAssociatedObject(UIImage * _Nullable source, UIImage * _Nullable target);
