@@ -12,12 +12,23 @@
 
 #import "UIImage+Transform.h"
 
+/**
+ * Category that extends NSBezierPath to provide rounded corner functionality
+ * This mirrors the UIBezierPath API available on iOS for consistency across platforms
+ */
 @interface NSBezierPath (SDRoundedCorners)
 
 /**
- Convenience way to create a bezier path with the specify rounding corners on macOS. Same as the one on `UIBezierPath`.
+ * Creates a bezier path with the specified rounded corners.
+ * 
+ * @param rect The rectangle that defines the path's bounds
+ * @param corners A bitmask value that identifies the corners to round
+ * @param cornerRadius The radius of each rounded corner
+ * @return A new bezier path object with the specified rounded corners
  */
-+ (nonnull instancetype)sd_bezierPathWithRoundedRect:(NSRect)rect byRoundingCorners:(SDRectCorner)corners cornerRadius:(CGFloat)cornerRadius;
++ (nonnull instancetype)sd_bezierPathWithRoundedRect:(NSRect)rect 
+                                 byRoundingCorners:(SDRectCorner)corners 
+                                      cornerRadius:(CGFloat)cornerRadius;
 
 @end
 

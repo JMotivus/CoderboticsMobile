@@ -12,29 +12,78 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A per-provider (provider means, AnimatedImage object) based frame pool, each player who use the same provider share the same frame buffer
+/**
+ * A per-provider frame pool that manages animated image frames.
+ * Each player using the same provider shares the same frame buffer.
+ * This allows for efficient memory usage when multiple views display the same animated image.
+ */
 @interface SDImageFramePool : NSObject
 
-/// Register and return back a frame pool, also increase reference count
+/**
+ * Registers a provider with the frame pool and increases its reference count.
+ * @param provider The animated image provider to register
+ * @return The frame pool instance
+ */
 + (instancetype)registerProvider:(id<SDAnimatedImageProvider>)provider;
-/// Unregister a frame pool, also decrease reference count, if zero dealloc the frame pool
+
+/**
+ * Unregisters a provider from the frame pool and decreases its reference count.
+ * When the reference count reaches zero, the frame pool is deallocated.
+ * @param provider The animated image provider to unregister
+ */
 + (void)unregisterProvider:(id<SDAnimatedImageProvider>)provider;
 
-/// Prefetch the current frame, query using `frameAtIndex:` by caller to check whether finished.
+/**
+ * Prefetches the frame at the specified index.
+ * Caller should use `frameAtIndex:` to check if prefetching has completed.
+ * @param index The index of the frame to prefetch
+ */
 - (void)prefetchFrameAtIndex:(NSUInteger)index;
 
-/// Control the max buffer count for current frame pool, used for RAM/CPU balance, default unlimited
+/**
+ * Maximum number of frames to keep in the buffer.
+ * Used to balance RAM usage and CPU performance.
+ * Default is unlimited (0).
+ */
 @property (nonatomic, assign) NSUInteger maxBufferCount;
-/// Control the max concurrent fetch queue operation count, used for CPU balance, default 1
+
+/**
+ * Maximum number of concurrent frame fetch operations.
+ * Used to balance CPU load.
+ * Default is 1.
+ */
 @property (nonatomic, assign) NSUInteger maxConcurrentCount;
 
-// Frame Operations
+/**
+ * The current number of frames in the pool.
+ */
 @property (nonatomic, readonly) NSUInteger currentFrameCount;
+
+/**
+ * Retrieves the frame at the specified index.
+ * @param index The index of the frame to retrieve
+ * @return The frame at the specified index, or nil if not available
+ */
 - (nullable UIImage *)frameAtIndex:(NSUInteger)index;
+
+/**
+ * Sets a frame at the specified index.
+ * @param frame The frame to set
+ * @param index The index at which to set the frame
+ */
 - (void)setFrame:(nullable UIImage *)frame atIndex:(NSUInteger)index;
+
+/**
+ * Removes the frame at the specified index.
+ * @param index The index of the frame to remove
+ */
 - (void)removeFrameAtIndex:(NSUInteger)index;
+
+/**
+ * Removes all frames from the pool.
+ */
 - (void)removeAllFrames;
 
-NS_ASSUME_NONNULL_END
-
 @end
+
+NS_ASSUME_NONNULL_END

@@ -9,7 +9,6 @@
 #ifndef EXTC_METAMACROS_H
 #define EXTC_METAMACROS_H
 
-
 /**
  * Executes one or more expressions (which may have a void type, such as a call
  * to a function that returns no value) and always returns true.
@@ -99,10 +98,8 @@
  * always needs to match at least one argument).
  *
  * @code
-
-#define varmacro(...) \
-    metamacro_head(__VA_ARGS__)
-
+ * #define varmacro(...) \
+ *     metamacro_head(__VA_ARGS__)
  * @endcode
  */
 #define metamacro_head(...) \
@@ -153,13 +150,11 @@
  * and twenty, inclusive. Additionally, B must be greater than or equal to A.
  *
  * @code
-
-// expands to true
-metamacro_if_eq(0, 0)(true)(false)
-
-// expands to false
-metamacro_if_eq(0, 1)(true)(false)
-
+ * // expands to true
+ * metamacro_if_eq(0, 0)(true)(false)
+ *
+ * // expands to false
+ * metamacro_if_eq(0, 1)(true)(false)
  * @endcode
  *
  * This is primarily useful when dealing with indexes and counts in

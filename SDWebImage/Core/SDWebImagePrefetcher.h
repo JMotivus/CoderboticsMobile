@@ -12,24 +12,24 @@
 @class SDWebImagePrefetcher;
 
 /**
- A token represents a list of URLs, can be used to cancel the download.
+ * A token represents a list of URLs, can be used to cancel the download.
  */
 @interface SDWebImagePrefetchToken : NSObject <SDWebImageOperation>
+
+/**
+ * List of URLs of current prefetching.
+ */
+@property (nonatomic, copy, readonly, nullable) NSArray<NSURL *> *urls;
 
 /**
  * Cancel the current prefetching.
  */
 - (void)cancel;
 
-/**
- list of URLs of current prefetching.
- */
-@property (nonatomic, copy, readonly, nullable) NSArray<NSURL *> *urls;
-
 @end
 
 /**
- The prefetcher delegate protocol
+ * The prefetcher delegate protocol
  */
 @protocol SDWebImagePrefetcherDelegate <NSObject>
 
@@ -43,25 +43,43 @@
  * @param finishedCount   The total number of images that were prefetched (successful or not)
  * @param totalCount      The total number of images that were to be prefetched
  */
-- (void)imagePrefetcher:(nonnull SDWebImagePrefetcher *)imagePrefetcher didPrefetchURL:(nullable NSURL *)imageURL finishedCount:(NSUInteger)finishedCount totalCount:(NSUInteger)totalCount;
+- (void)imagePrefetcher:(nonnull SDWebImagePrefetcher *)imagePrefetcher 
+          didPrefetchURL:(nullable NSURL *)imageURL 
+           finishedCount:(NSUInteger)finishedCount 
+              totalCount:(NSUInteger)totalCount;
 
 /**
  * Called when all images are prefetched. Which means it's called when all URLs from all of prefetching finished.
+ * 
  * @param imagePrefetcher The current image prefetcher
  * @param totalCount      The total number of images that were prefetched (whether successful or not)
  * @param skippedCount    The total number of images that were skipped
  */
-- (void)imagePrefetcher:(nonnull SDWebImagePrefetcher *)imagePrefetcher didFinishWithTotalCount:(NSUInteger)totalCount skippedCount:(NSUInteger)skippedCount;
+- (void)imagePrefetcher:(nonnull SDWebImagePrefetcher *)imagePrefetcher 
+  didFinishWithTotalCount:(NSUInteger)totalCount 
+             skippedCount:(NSUInteger)skippedCount;
 
 @end
 
+/**
+ * Progress block for prefetching, providing current progress status.
+ */
 typedef void(^SDWebImagePrefetcherProgressBlock)(NSUInteger noOfFinishedUrls, NSUInteger noOfTotalUrls);
+
+/**
+ * Completion block for prefetching, providing final results.
+ */
 typedef void(^SDWebImagePrefetcherCompletionBlock)(NSUInteger noOfFinishedUrls, NSUInteger noOfSkippedUrls);
 
 /**
  * Prefetch some URLs in the cache for future use. Images are downloaded in low priority.
  */
 @interface SDWebImagePrefetcher : NSObject
+
+/**
+ * Returns the global shared image prefetcher instance. It use a standalone manager which is different from shared manager.
+ */
+@property (nonatomic, class, readonly, nonnull) SDWebImagePrefetcher *sharedImagePrefetcher;
 
 /**
  * The web image manager used by prefetcher to prefetch images.
@@ -73,6 +91,11 @@ typedef void(^SDWebImagePrefetcherCompletionBlock)(NSUInteger noOfFinishedUrls, 
  * Maximum number of URLs to prefetch at the same time. Defaults to 3.
  */
 @property (nonatomic, assign) NSUInteger maxConcurrentPrefetchCount;
+
+/**
+ * The delegate for the prefetcher. Defaults to nil.
+ */
+@property (weak, nonatomic, nullable) id <SDWebImagePrefetcherDelegate> delegate;
 
 /**
  * The options for prefetcher. Defaults to SDWebImageLowPriority.
@@ -93,16 +116,6 @@ typedef void(^SDWebImagePrefetcherCompletionBlock)(NSUInteger noOfFinishedUrls, 
  * @note The delegate queue should be set before any prefetching start and may not be changed during prefetching to avoid thread-safe problem.
  */
 @property (strong, nonatomic, nonnull) dispatch_queue_t delegateQueue API_DEPRECATED("Use SDWebImageContextCallbackQueue context param instead, see SDCallbackQueue", macos(10.10, 10.10), ios(8.0, 8.0), tvos(9.0, 9.0), watchos(2.0, 2.0));
-
-/**
- * The delegate for the prefetcher. Defaults to nil.
- */
-@property (weak, nonatomic, nullable) id <SDWebImagePrefetcherDelegate> delegate;
-
-/**
- * Returns the global shared image prefetcher instance. It use a standalone manager which is different from shared manager.
- */
-@property (nonatomic, class, readonly, nonnull) SDWebImagePrefetcher *sharedImagePrefetcher;
 
 /**
  * Allows you to instantiate a prefetcher with any arbitrary image manager.
@@ -163,6 +176,5 @@ typedef void(^SDWebImagePrefetcherCompletionBlock)(NSUInteger noOfFinishedUrls, 
  * Remove and cancel all the prefeching for the prefetcher.
  */
 - (void)cancelPrefetching;
-
 
 @end

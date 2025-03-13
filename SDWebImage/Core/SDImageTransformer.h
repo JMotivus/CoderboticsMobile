@@ -20,6 +20,7 @@ FOUNDATION_EXPORT NSString * _Nullable SDTransformedKeyForKey(NSString * _Nullab
 
 /**
  Return the thumbnailed cache key which applied with specify thumbnailSize and preserveAspectRatio control.
+ 
  @param key The original cache key
  @param thumbnailPixelSize The thumbnail pixel size
  @param preserveAspectRatio The preserve aspect ratio option
@@ -27,6 +28,8 @@ FOUNDATION_EXPORT NSString * _Nullable SDTransformedKeyForKey(NSString * _Nullab
  @note If you have both transformer and thumbnail applied for image, call `SDThumbnailedKeyForKey` firstly and then with `SDTransformedKeyForKey`.`
  */
 FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullable key, CGSize thumbnailPixelSize, BOOL preserveAspectRatio);
+
+#pragma mark - SDImageTransformer Protocol
 
 /**
  A transformer protocol to transform the image load from cache or from download.
@@ -68,37 +71,52 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 
 @end
 
-#pragma mark - Pipeline
+#pragma mark - Pipeline Transformer
 
 /**
  Pipeline transformer. Which you can bind multiple transformers together to let the image to be transformed one by one in order and generate the final image.
  @note Because transformers are lightweight, if you want to append or arrange transformers, create another pipeline transformer instead. This class is considered as immutable.
  */
 @interface SDImagePipelineTransformer : NSObject<SDImageTransformer>
+
 /// For pipeline transformer, this property is readonly and always return NO. We handle each transformer's choice inside implementation
 @property (nonatomic, assign, readonly) BOOL preserveImageMetadata;
+
 /**
  All transformers in pipeline
  */
 @property (nonatomic, copy, readonly, nonnull) NSArray<id<SDImageTransformer>> *transformers;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a pipeline transformer with an array of transformers.
+ 
+ @param transformers The array of transformers
+ @return A new pipeline transformer
+ */
 + (nonnull instancetype)transformerWithTransformers:(nonnull NSArray<id<SDImageTransformer>> *)transformers;
 
 @end
 
-#pragma mark - Base
-/// This is the base class for our built-in concrete transformers. You should not use this class directlly, use cconcrete subclass (like `SDImageRoundCornerTransformer`) instead.
+#pragma mark - Base Transformer
+
+/**
+ This is the base class for our built-in concrete transformers. 
+ You should not use this class directly, use concrete subclass (like `SDImageRoundCornerTransformer`) instead.
+ */
 @interface SDImageBaseTransformer : NSObject<SDImageTransformer>
-/// For concrete transformer, this property is readwrite and defaults to YES. You can choose whether to preserve image metadata **After you generate the UIImage**
+
+/**
+ For concrete transformer, this property is readwrite and defaults to YES. 
+ You can choose whether to preserve image metadata **After you generate the UIImage**
+ */
 @property (nonatomic, assign, readwrite) BOOL preserveImageMetadata;
+
 @end
 
-// There are some built-in transformers based on the `UIImage+Transformer` category to provide the common image geometry, image blending and image effect process. Those transform are useful for static image only but you can create your own to support animated image as well.
-// Because transformers are lightweight, these class are considered as immutable.
-#pragma mark - Image Geometry
+#pragma mark - Image Geometry Transformers
 
 /**
  Image round corner transformer
@@ -132,9 +150,21 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, strong, readonly, nullable) UIColor *borderColor;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
-+ (nonnull instancetype)transformerWithRadius:(CGFloat)cornerRadius corners:(SDRectCorner)corners borderWidth:(CGFloat)borderWidth borderColor:(nullable UIColor *)borderColor;
+/**
+ Create a round corner transformer with the specified parameters.
+ 
+ @param cornerRadius The radius of the corners
+ @param corners The corners to round
+ @param borderWidth The width of the border
+ @param borderColor The color of the border
+ @return A new round corner transformer
+ */
++ (nonnull instancetype)transformerWithRadius:(CGFloat)cornerRadius 
+                                      corners:(SDRectCorner)corners 
+                                  borderWidth:(CGFloat)borderWidth 
+                                  borderColor:(nullable UIColor *)borderColor;
 
 @end
 
@@ -154,8 +184,15 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, assign, readonly) SDImageScaleMode scaleMode;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a resizing transformer with the specified size and scale mode.
+ 
+ @param size The target size
+ @param scaleMode The scale mode to use
+ @return A new resizing transformer
+ */
 + (nonnull instancetype)transformerWithSize:(CGSize)size scaleMode:(SDImageScaleMode)scaleMode;
 
 @end
@@ -171,8 +208,14 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, assign, readonly) CGRect rect;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a cropping transformer with the specified rect.
+ 
+ @param rect The rectangle to crop to
+ @return A new cropping transformer
+ */
 + (nonnull instancetype)transformerWithRect:(CGRect)rect;
 
 @end
@@ -193,8 +236,15 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, assign, readonly) BOOL vertical;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a flipping transformer with horizontal and vertical options.
+ 
+ @param horizontal Whether to flip horizontally
+ @param vertical Whether to flip vertically
+ @return A new flipping transformer
+ */
 + (nonnull instancetype)transformerWithHorizontal:(BOOL)horizontal vertical:(BOOL)vertical;
 
 @end
@@ -216,13 +266,20 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, assign, readonly) BOOL fitSize;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a rotation transformer with the specified angle and fit option.
+ 
+ @param angle The angle to rotate in radians (counterclockwise)
+ @param fitSize Whether to adjust the size to fit the rotated content
+ @return A new rotation transformer
+ */
 + (nonnull instancetype)transformerWithAngle:(CGFloat)angle fitSize:(BOOL)fitSize;
 
 @end
 
-#pragma mark - Image Blending
+#pragma mark - Image Blending Transformers
 
 /**
  Image tint color transformer
@@ -233,18 +290,35 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
  The tint color.
  */
 @property (nonatomic, strong, readonly, nonnull) UIColor *tintColor;
-/// The blend mode, defaults to `sourceIn` if you use the initializer without blend mode
+
+/**
+ The blend mode, defaults to `sourceIn` if you use the initializer without blend mode
+ */
 @property (nonatomic, assign, readonly) CGBlendMode blendMode;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a tint transformer with the specified color using default blend mode (sourceIn).
+ 
+ @param tintColor The color to tint with
+ @return A new tint transformer
+ */
 + (nonnull instancetype)transformerWithColor:(nonnull UIColor *)tintColor;
+
+/**
+ Create a tint transformer with the specified color and blend mode.
+ 
+ @param tintColor The color to tint with
+ @param blendMode The blend mode to use
+ @return A new tint transformer
+ */
 + (nonnull instancetype)transformerWithColor:(nonnull UIColor *)tintColor blendMode:(CGBlendMode)blendMode;
 
 @end
 
-#pragma mark - Image Effect
+#pragma mark - Image Effect Transformers
 
 /**
  Image blur effect transformer
@@ -257,8 +331,14 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, assign, readonly) CGFloat blurRadius;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a blur transformer with the specified radius.
+ 
+ @param blurRadius The radius of the blur effect
+ @return A new blur transformer
+ */
 + (nonnull instancetype)transformerWithRadius:(CGFloat)blurRadius;
 
 @end
@@ -275,8 +355,14 @@ FOUNDATION_EXPORT NSString * _Nullable SDThumbnailedKeyForKey(NSString * _Nullab
 @property (nonatomic, strong, readonly, nonnull) CIFilter *filter;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
+/**
+ Create a Core Image filter transformer with the specified filter.
+ 
+ @param filter The Core Image filter to apply
+ @return A new filter transformer
+ */
 + (nonnull instancetype)transformerWithFilter:(nonnull CIFilter *)filter;
 
 @end

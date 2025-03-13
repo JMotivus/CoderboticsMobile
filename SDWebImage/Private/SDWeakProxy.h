@@ -9,12 +9,37 @@
 #import <Foundation/Foundation.h>
 #import "SDWebImageCompat.h"
 
-/// A weak proxy which forward all the message to the target
+NS_ASSUME_NONNULL_BEGIN
+
+/**
+ * SDWeakProxy
+ * A weak proxy which forwards all messages to the target object.
+ * This is useful to break retain cycles in delegates and timers.
+ */
 @interface SDWeakProxy : NSProxy
 
+/**
+ * The weak reference to the target object.
+ * Messages sent to the proxy will be forwarded to this target.
+ */
 @property (nonatomic, weak, readonly, nullable) id target;
 
-- (nonnull instancetype)initWithTarget:(nonnull id)target;
-+ (nonnull instancetype)proxyWithTarget:(nonnull id)target;
+/**
+ * Creates a new weak proxy with the specified target.
+ *
+ * @param target The object to which messages will be forwarded.
+ * @return A new weak proxy instance.
+ */
+- (instancetype)initWithTarget:(id)target NS_DESIGNATED_INITIALIZER;
+
+/**
+ * Factory method to create a new weak proxy with the specified target.
+ *
+ * @param target The object to which messages will be forwarded.
+ * @return A new weak proxy instance.
+ */
++ (instancetype)proxyWithTarget:(id)target;
 
 @end
+
+NS_ASSUME_NONNULL_END

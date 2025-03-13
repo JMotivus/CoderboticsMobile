@@ -7,13 +7,86 @@
 
 #import <Foundation/Foundation.h>
 
-/// File Extended Attribute (xattr) helper methods
+NS_ASSUME_NONNULL_BEGIN
+
+/**
+ * File Extended Attribute (xattr) helper methods
+ * Provides utility methods for working with extended file attributes in macOS/iOS
+ */
 @interface SDFileAttributeHelper : NSObject
 
-+ (nullable NSArray<NSString *> *)extendedAttributeNamesAtPath:(nonnull NSString *)path traverseLink:(BOOL)follow error:(NSError * _Nullable * _Nullable)err;
-+ (BOOL)hasExtendedAttribute:(nonnull NSString *)name atPath:(nonnull NSString *)path traverseLink:(BOOL)follow error:(NSError * _Nullable * _Nullable)err;
-+ (nullable NSData *)extendedAttribute:(nonnull NSString *)name atPath:(nonnull NSString *)path traverseLink:(BOOL)follow error:(NSError * _Nullable * _Nullable)err;
-+ (BOOL)setExtendedAttribute:(nonnull NSString *)name value:(nonnull NSData *)value atPath:(nonnull NSString *)path traverseLink:(BOOL)follow overwrite:(BOOL)overwrite error:(NSError * _Nullable * _Nullable)err;
-+ (BOOL)removeExtendedAttribute:(nonnull NSString *)name atPath:(nonnull NSString *)path traverseLink:(BOOL)follow error:(NSError * _Nullable * _Nullable)err;
+/**
+ * Returns an array of extended attribute names for the specified path
+ *
+ * @param path The file path to examine
+ * @param follow Whether to follow symbolic links
+ * @param err On return, contains any error that occurred
+ * @return Array of attribute names or nil if an error occurred
+ */
++ (nullable NSArray<NSString *> *)extendedAttributeNamesAtPath:(NSString *)path 
+                                                  traverseLink:(BOOL)follow 
+                                                         error:(NSError **)err;
+
+/**
+ * Checks if a specific extended attribute exists at the given path
+ *
+ * @param name The name of the extended attribute
+ * @param path The file path to examine
+ * @param follow Whether to follow symbolic links
+ * @param err On return, contains any error that occurred
+ * @return YES if the attribute exists, NO otherwise
+ */
++ (BOOL)hasExtendedAttribute:(NSString *)name 
+                      atPath:(NSString *)path 
+                traverseLink:(BOOL)follow 
+                       error:(NSError **)err;
+
+/**
+ * Retrieves the value of a specific extended attribute at the given path
+ *
+ * @param name The name of the extended attribute
+ * @param path The file path to examine
+ * @param follow Whether to follow symbolic links
+ * @param err On return, contains any error that occurred
+ * @return The attribute value as NSData or nil if an error occurred
+ */
++ (nullable NSData *)extendedAttribute:(NSString *)name 
+                               atPath:(NSString *)path 
+                         traverseLink:(BOOL)follow 
+                                error:(NSError **)err;
+
+/**
+ * Sets the value of a specific extended attribute at the given path
+ *
+ * @param name The name of the extended attribute
+ * @param value The value to set
+ * @param path The file path to modify
+ * @param follow Whether to follow symbolic links
+ * @param overwrite Whether to overwrite existing attribute
+ * @param err On return, contains any error that occurred
+ * @return YES if successful, NO otherwise
+ */
++ (BOOL)setExtendedAttribute:(NSString *)name 
+                       value:(NSData *)value 
+                      atPath:(NSString *)path 
+                traverseLink:(BOOL)follow 
+                   overwrite:(BOOL)overwrite 
+                       error:(NSError **)err;
+
+/**
+ * Removes a specific extended attribute from the given path
+ *
+ * @param name The name of the extended attribute
+ * @param path The file path to modify
+ * @param follow Whether to follow symbolic links
+ * @param err On return, contains any error that occurred
+ * @return YES if successful, NO otherwise
+ */
++ (BOOL)removeExtendedAttribute:(NSString *)name 
+                         atPath:(NSString *)path 
+                   traverseLink:(BOOL)follow 
+                          error:(NSError **)err;
 
 @end
+
+NS_ASSUME_NONNULL_END

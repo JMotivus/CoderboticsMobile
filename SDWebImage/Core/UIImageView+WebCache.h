@@ -10,38 +10,32 @@
 #import "SDWebImageManager.h"
 
 /**
+ * Integrates SDWebImage async downloading and caching of remote images with UIImageView.
+ *
  * Usage with a UITableViewCell sub-class:
  *
  * @code
-
-#import <SDWebImage/UIImageView+WebCache.h>
-
-...
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString *MyIdentifier = @"MyIdentifier";
- 
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
- 
-    if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier];
-    }
- 
-    // Here we use the provided sd_setImageWithURL:placeholderImage: method to load the web image
-    // Ensure you use a placeholder image otherwise cells will be initialized with no image
-    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:@"http://example.com/image.jpg"]
-                      placeholderImage:[UIImage imageNamed:@"placeholder"]];
- 
-    cell.textLabel.text = @"My Text";
-    return cell;
-}
-
+ * #import <SDWebImage/UIImageView+WebCache.h>
+ *
+ * - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+ * {
+ *     static NSString *MyIdentifier = @"MyIdentifier";
+ *  
+ *     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:MyIdentifier];
+ *  
+ *     if (cell == nil) {
+ *         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier];
+ *     }
+ *  
+ *     // Here we use the provided sd_setImageWithURL:placeholderImage: method to load the web image
+ *     // Ensure you use a placeholder image otherwise cells will be initialized with no image
+ *     [cell.imageView sd_setImageWithURL:[NSURL URLWithString:@"http://example.com/image.jpg"]
+ *                       placeholderImage:[UIImage imageNamed:@"placeholder"]];
+ *  
+ *     cell.textLabel.text = @"My Text";
+ *     return cell;
+ * }
  * @endcode
- */
-
-/**
- * Integrates SDWebImage async downloading and caching of remote images with UIImageView.
  */
 @interface UIImageView (WebCache)
 

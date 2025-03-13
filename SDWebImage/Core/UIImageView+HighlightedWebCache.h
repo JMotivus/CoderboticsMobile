@@ -17,12 +17,14 @@
  */
 @interface UIImageView (HighlightedWebCache)
 
-#pragma mark - Highlighted Image
+#pragma mark - Properties
 
 /**
  * Get the current highlighted image URL.
  */
 @property (nonatomic, strong, readonly, nullable) NSURL *sd_currentHighlightedImageURL;
+
+#pragma mark - Basic Loading Methods
 
 /**
  * Set the imageView `highlightedImage` with an `url`.
@@ -51,11 +53,13 @@
  *
  * @param url     The url for the image.
  * @param options The options to use when downloading the image. @see SDWebImageOptions for the possible values.
- * @param context     A context contains different options to perform specify changes or processes, see `SDWebImageContextOption`. This hold the extra objects which `options` enum can not hold.
+ * @param context A context contains different options to perform specify changes or processes, see `SDWebImageContextOption`. This hold the extra objects which `options` enum can not hold.
  */
 - (void)sd_setHighlightedImageWithURL:(nullable NSURL *)url
                               options:(SDWebImageOptions)options
                               context:(nullable SDWebImageContext *)context;
+
+#pragma mark - Loading Methods with Completion Block
 
 /**
  * Set the imageView `highlightedImage` with an `url`.
@@ -89,6 +93,8 @@
                               options:(SDWebImageOptions)options
                             completed:(nullable SDExternalCompletionBlock)completedBlock;
 
+#pragma mark - Advanced Loading Methods
+
 /**
  * Set the imageView `highlightedImage` with an `url` and custom options.
  *
@@ -116,7 +122,7 @@
  *
  * @param url            The url for the image.
  * @param options        The options to use when downloading the image. @see SDWebImageOptions for the possible values.
- * @param context     A context contains different options to perform specify changes or processes, see `SDWebImageContextOption`. This hold the extra objects which `options` enum can not hold.
+ * @param context        A context contains different options to perform specify changes or processes, see `SDWebImageContextOption`. This hold the extra objects which `options` enum can not hold.
  * @param progressBlock  A block called while image is downloading
  *                       @note the progress block is executed on a background queue
  * @param completedBlock A block called when operation has been completed. This block has no return value
@@ -130,6 +136,8 @@
                               context:(nullable SDWebImageContext *)context
                              progress:(nullable SDImageLoaderProgressBlock)progressBlock
                             completed:(nullable SDExternalCompletionBlock)completedBlock;
+
+#pragma mark - Cancel Loading
 
 /**
  * Cancel the current highlighted image load (for `UIImageView.highlighted`)

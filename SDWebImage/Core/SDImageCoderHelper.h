@@ -10,6 +10,8 @@
 #import "SDWebImageCompat.h"
 #import "SDImageFrame.h"
 
+#pragma mark - Enumerations
+
 /// The options controls how we force pre-draw the image (to avoid lazy-decoding). Which need OS's framework compatibility
 typedef NS_ENUM(NSUInteger, SDImageCoderDecodeSolution) {
     /// automatically choose the solution based on image format, hardware, OS version. This keep balance for compatibility and performance. Default after SDWebImage 5.13.0
@@ -44,13 +46,7 @@ typedef NS_ENUM(NSUInteger, SDImageHDRType) {
     SDImageHDRTypeISOGainMap = 2,
 };
 
-/// Byte alignment the bytes size with alignment
-/// - Parameters:
-///   - size: The bytes size
-///   - alignment: The alignment, in bytes
-static inline size_t SDByteAlign(size_t size, size_t alignment) {
-    return ((size + (alignment - 1)) / alignment) * alignment;
-}
+#pragma mark - Structs and Utility Functions
 
 /// The pixel format about the information to call `CGImageCreate` suitable for current hardware rendering
 typedef struct SDImagePixelFormat {
@@ -60,10 +56,22 @@ typedef struct SDImagePixelFormat {
     size_t alignment;
 } SDImagePixelFormat;
 
+/// Byte alignment the bytes size with alignment
+/// - Parameters:
+///   - size: The bytes size
+///   - alignment: The alignment, in bytes
+static inline size_t SDByteAlign(size_t size, size_t alignment) {
+    return ((size + (alignment - 1)) / alignment) * alignment;
+}
+
+#pragma mark - SDImageCoderHelper Interface
+
 /**
  Provide some common helper methods for building the image decoder/encoder.
  */
 @interface SDImageCoderHelper : NSObject
+
+#pragma mark - Animation Helpers
 
 /**
  Return an animated image with frames array.
@@ -85,9 +93,8 @@ typedef struct SDImagePixelFormat {
  */
 + (NSArray<SDImageFrame *> * _Nullable)framesFromAnimatedImage:(UIImage * _Nullable)animatedImage NS_SWIFT_NAME(frames(from:));
 
-#pragma mark - Preferred Rendering Format
-/// For coders who use `CGImageCreate`, use the information below to create an effient CGImage which can be render on GPU without Core Animation's extra copy (`CA::Render::copy_image`), which can be debugged using `Color Copied Image` in Xcode Instruments
-/// `CGImageCreate`'s `bytesPerRow`, `space`, `bitmapInfo` params should use the information below.
+#pragma mark - Rendering Format Helpers
+
 /**
  Return the shared device-dependent RGB color space. This follows The Get Rule.
  Because it's shared, you should not retain or release this object.
@@ -98,10 +105,12 @@ typedef struct SDImagePixelFormat {
 + (CGColorSpaceRef _Nonnull)colorSpaceGetDeviceRGB CF_RETURNS_NOT_RETAINED;
 
 /**
- Tthis returns the pixel format **Preferred from current hardward && OS using runtime detection**
+ This returns the pixel format **Preferred from current hardward && OS using runtime detection**
  @param containsAlpha Whether the image to render contains alpha channel
  */
 + (SDImagePixelFormat)preferredPixelFormat:(BOOL)containsAlpha;
+
+#pragma mark - CGImage Analysis Helpers
 
 /**
  Check whether CGImage is hardware supported to rendering on screen, without the trigger of `CA::Render::copy_image`
@@ -129,6 +138,8 @@ typedef struct SDImagePixelFormat {
  @note This use the same implementation like Apple, to checkl if color space uses transfer functions defined in ITU Rec.2100
  */
 + (BOOL)CGImageIsHDR:(_Nonnull CGImageRef)cgImage;
+
+#pragma mark - CGImage Creation Helpers
 
 /**
  Create a decoded CGImage by the provided CGImage. This follows The Create Rule and you are response to call release after usage.
@@ -163,7 +174,10 @@ typedef struct SDImagePixelFormat {
  */
 + (CGImageRef _Nullable)CGImageCreateScaled:(_Nonnull CGImageRef)cgImage size:(CGSize)size CF_RETURNS_RETAINED;
 
-/** Scale the image size based on provided scale size, whether or not to preserve aspect ratio, whether or not to scale up.
+#pragma mark - Size Calculation Helpers
+
+/** 
+ Scale the image size based on provided scale size, whether or not to preserve aspect ratio, whether or not to scale up.
  @note For example, if you implements thumnail decoding, pass `shouldScaleUp` to NO to avoid the calculated size larger than image size.
  
  @param imageSize The image size (in pixel or point defined by caller)
@@ -171,16 +185,31 @@ typedef struct SDImagePixelFormat {
  @param preserveAspectRatio Whether or not to preserve aspect ratio
  @param shouldScaleUp Whether or not to scale up (or scale down only)
  */
-+ (CGSize)scaledSizeWithImageSize:(CGSize)imageSize scaleSize:(CGSize)scaleSize preserveAspectRatio:(BOOL)preserveAspectRatio shouldScaleUp:(BOOL)shouldScaleUp;
++ (CGSize)scaledSizeWithImageSize:(CGSize)imageSize 
+                        scaleSize:(CGSize)scaleSize 
+               preserveAspectRatio:(BOOL)preserveAspectRatio 
+                     shouldScaleUp:(BOOL)shouldScaleUp;
 
-/// Calculate the limited image size with the bytes, when using `SDImageCoderDecodeScaleDownLimitBytes`. This preserve aspect ratio and never scale up
-/// @param imageSize The image size (in pixel or point defined by caller)
-/// @param limitBytes The limit bytes
-/// @param bytesPerPixel The bytes per pixel
-/// @param frameCount The image frame count, 0 means 1 frame as well
-+ (CGSize)scaledSizeWithImageSize:(CGSize)imageSize limitBytes:(NSUInteger)limitBytes bytesPerPixel:(NSUInteger)bytesPerPixel frameCount:(NSUInteger)frameCount;
 /**
- Return the decoded image by the provided image. This one unlike `CGImageCreateDecoded:`, will not decode the image which contains alpha channel or animated image. On iOS 15+, this may use `UIImage.preparingForDisplay()` to use CMPhoto for better performance than the old solution.
+ Calculate the limited image size with the bytes, when using `SDImageCoderDecodeScaleDownLimitBytes`. 
+ This preserve aspect ratio and never scale up.
+ 
+ @param imageSize The image size (in pixel or point defined by caller)
+ @param limitBytes The limit bytes
+ @param bytesPerPixel The bytes per pixel
+ @param frameCount The image frame count, 0 means 1 frame as well
+ */
++ (CGSize)scaledSizeWithImageSize:(CGSize)imageSize 
+                      limitBytes:(NSUInteger)limitBytes 
+                   bytesPerPixel:(NSUInteger)bytesPerPixel 
+                      frameCount:(NSUInteger)frameCount;
+
+#pragma mark - UIImage Decoding Helpers
+
+/**
+ Return the decoded image by the provided image. This one unlike `CGImageCreateDecoded:`, will not decode the image which contains alpha channel or animated image. 
+ On iOS 15+, this may use `UIImage.preparingForDisplay()` to use CMPhoto for better performance than the old solution.
+ 
  @param image The image to be decoded
  @note This translate to `decodedImageWithImage:policy:` with automatic policy
  @return The decoded image
@@ -188,46 +217,66 @@ typedef struct SDImagePixelFormat {
 + (UIImage * _Nullable)decodedImageWithImage:(UIImage * _Nullable)image;
 
 /**
- Return the decoded image by the provided image. This one unlike `CGImageCreateDecoded:`, will not decode the image which contains alpha channel or animated image. On iOS 15+, this may use `UIImage.preparingForDisplay()` to use CMPhoto for better performance than the old solution.
+ Return the decoded image by the provided image. This one unlike `CGImageCreateDecoded:`, will not decode the image which contains alpha channel or animated image. 
+ On iOS 15+, this may use `UIImage.preparingForDisplay()` to use CMPhoto for better performance than the old solution.
+ 
  @param image The image to be decoded
  @param policy The force decode policy to decode image, will effect the check whether input image need decode
  @return The decoded image
  */
-+ (UIImage * _Nullable)decodedImageWithImage:(UIImage * _Nullable)image policy:(SDImageForceDecodePolicy)policy;
++ (UIImage * _Nullable)decodedImageWithImage:(UIImage * _Nullable)image 
+                                      policy:(SDImageForceDecodePolicy)policy;
 
 /**
- Return the decoded and probably scaled down image by the provided image. If the image pixels bytes size large than the limit bytes, will try to scale down. Or just works as `decodedImageWithImage:`, never scale up.
- @warning You should not pass too small bytes, the suggestion value should be larger than 1MB. Even we use Tile Decoding to avoid OOM, however, small bytes will consume much more CPU time because we need to iterate more times to draw each tile.
+ Return the decoded and probably scaled down image by the provided image. 
+ If the image pixels bytes size large than the limit bytes, will try to scale down. 
+ Or just works as `decodedImageWithImage:`, never scale up.
+ 
+ @warning You should not pass too small bytes, the suggestion value should be larger than 1MB. 
+ Even we use Tile Decoding to avoid OOM, however, small bytes will consume much more CPU time because we need to iterate more times to draw each tile.
 
  @param image The image to be decoded and scaled down
  @param bytes The limit bytes size. Provide 0 to use the build-in limit.
  @note This translate to `decodedAndScaledDownImageWithImage:limitBytes:policy:` with automatic policy
  @return The decoded and probably scaled down image
  */
-+ (UIImage * _Nullable)decodedAndScaledDownImageWithImage:(UIImage * _Nullable)image limitBytes:(NSUInteger)bytes;
++ (UIImage * _Nullable)decodedAndScaledDownImageWithImage:(UIImage * _Nullable)image 
+                                              limitBytes:(NSUInteger)bytes;
 
 /**
- Return the decoded and probably scaled down image by the provided image. If the image pixels bytes size large than the limit bytes, will try to scale down. Or just works as `decodedImageWithImage:`, never scale up.
- @warning You should not pass too small bytes, the suggestion value should be larger than 1MB. Even we use Tile Decoding to avoid OOM, however, small bytes will consume much more CPU time because we need to iterate more times to draw each tile.
+ Return the decoded and probably scaled down image by the provided image. 
+ If the image pixels bytes size large than the limit bytes, will try to scale down. 
+ Or just works as `decodedImageWithImage:`, never scale up.
+ 
+ @warning You should not pass too small bytes, the suggestion value should be larger than 1MB. 
+ Even we use Tile Decoding to avoid OOM, however, small bytes will consume much more CPU time because we need to iterate more times to draw each tile.
 
  @param image The image to be decoded and scaled down
  @param bytes The limit bytes size. Provide 0 to use the build-in limit.
  @param policy The force decode policy to decode image, will effect the check whether input image need decode
  @return The decoded and probably scaled down image
  */
-+ (UIImage * _Nullable)decodedAndScaledDownImageWithImage:(UIImage * _Nullable)image limitBytes:(NSUInteger)bytes policy:(SDImageForceDecodePolicy)policy;
++ (UIImage * _Nullable)decodedAndScaledDownImageWithImage:(UIImage * _Nullable)image 
+                                              limitBytes:(NSUInteger)bytes 
+                                                  policy:(SDImageForceDecodePolicy)policy;
+
+#pragma mark - Configuration Properties
 
 /**
- Control the default force decode solution. Available solutions  in `SDImageCoderDecodeSolution`.
- @note Defaults to `SDImageCoderDecodeSolutionAutomatic`, which prefers to use UIKit for JPEG/HEIF, and fallback on CoreGraphics. If you want control on your hand, set the other solution.
+ Control the default force decode solution. Available solutions in `SDImageCoderDecodeSolution`.
+ @note Defaults to `SDImageCoderDecodeSolutionAutomatic`, which prefers to use UIKit for JPEG/HEIF, and fallback on CoreGraphics. 
+ If you want control on your hand, set the other solution.
  */
 @property (class, readwrite) SDImageCoderDecodeSolution defaultDecodeSolution;
 
 /**
  Control the default limit bytes to scale down largest images.
- This value must be larger than 4 Bytes (at least 1x1 pixel). Defaults to 60MB on iOS/tvOS, 90MB on macOS, 30MB on watchOS.
+ This value must be larger than 4 Bytes (at least 1x1 pixel). 
+ Defaults to 60MB on iOS/tvOS, 90MB on macOS, 30MB on watchOS.
  */
 @property (class, readwrite) NSUInteger defaultScaleDownLimitBytes;
+
+#pragma mark - Orientation Conversion
 
 #if SD_UIKIT || SD_WATCH
 /**

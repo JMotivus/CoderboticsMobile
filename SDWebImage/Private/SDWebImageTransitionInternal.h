@@ -12,8 +12,20 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-/// Helper method for Core Animation transition
+/**
+ * Creates a media timing function based on the provided animation options.
+ *
+ * @param options The animation options to use for creating the timing function.
+ * @return A CAMediaTimingFunction instance based on the specified options, or nil if not applicable.
+ */
 FOUNDATION_EXPORT CAMediaTimingFunction * _Nullable SDTimingFunctionFromAnimationOptions(SDWebImageAnimationOptions options);
+
+/**
+ * Creates a transition animation based on the provided animation options.
+ *
+ * @param options The animation options to use for creating the transition.
+ * @return A CATransition instance configured with the specified options, or nil if not applicable.
+ */
 FOUNDATION_EXPORT CATransition * _Nullable SDTransitionFromAnimationOptions(SDWebImageAnimationOptions options);
 
 #endif

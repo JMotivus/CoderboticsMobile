@@ -9,64 +9,99 @@
 #import <Foundation/Foundation.h>
 #import "SDWebImageCompat.h"
 
+/**
+ * Block type for response modification operations.
+ * Takes an original response and returns a modified response.
+ */
 typedef NSURLResponse * _Nullable (^SDWebImageDownloaderResponseModifierBlock)(NSURLResponse * _Nonnull response);
 
 /**
- This is the protocol for downloader response modifier.
- We can use a block to specify the downloader response modifier. But Using protocol can make this extensible, and allow Swift user to use it easily instead of using `@convention(block)` to store a block into context options.
+ * Protocol for downloader response modifier.
+ * Using a protocol makes this extensible and allows Swift users to implement it
+ * without needing to use `@convention(block)` to store blocks in context options.
  */
 @protocol SDWebImageDownloaderResponseModifier <NSObject>
 
-/// Modify the original URL response and return a new response. You can use this to check MIME-Type, mock server response, etc.
-/// @param response The original URL response, note for HTTP request it's actually a `NSHTTPURLResponse` instance
-/// @note If nil is returned, the image download will marked as cancelled with error `SDWebImageErrorInvalidDownloadResponse`
+/**
+ * Modify the original URL response and return a new response.
+ * Can be used to check MIME-Type, mock server responses, etc.
+ *
+ * @param response The original URL response (for HTTP requests, this is an NSHTTPURLResponse)
+ * @return A modified response or nil (nil will cancel the download with SDWebImageErrorInvalidDownloadResponse)
+ */
 - (nullable NSURLResponse *)modifiedResponseWithResponse:(nonnull NSURLResponse *)response;
 
 @end
 
 /**
- A downloader response modifier class with block.
+ * A downloader response modifier implementation that uses a block for modification logic.
  */
 @interface SDWebImageDownloaderResponseModifier : NSObject <SDWebImageDownloaderResponseModifier>
 
-/// Create the response modifier with block
-/// @param block A block to control modifier logic
+/**
+ * Create a response modifier with the specified block.
+ *
+ * @param block Block that defines the modification logic
+ * @return A new response modifier instance
+ */
 - (nonnull instancetype)initWithBlock:(nonnull SDWebImageDownloaderResponseModifierBlock)block;
 
-/// Create the response modifier with block
-/// @param block A block to control modifier logic
+/**
+ * Class factory method to create a response modifier with the specified block.
+ *
+ * @param block Block that defines the modification logic
+ * @return A new response modifier instance
+ */
 + (nonnull instancetype)responseModifierWithBlock:(nonnull SDWebImageDownloaderResponseModifierBlock)block;
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
 @end
 
 /**
-A convenient response modifier to provide the HTTP response including HTTP Status Code, Version and Headers.
-*/
+ * Convenience methods for creating response modifiers with common HTTP modifications.
+ */
 @interface SDWebImageDownloaderResponseModifier (Conveniences)
 
-/// Create the response modifier with HTTP Status code.
-/// @param statusCode HTTP Status Code.
-/// @note This is for convenience, if you need code to control the logic, use block API instead.
+/**
+ * Create a response modifier that sets a specific HTTP status code.
+ *
+ * @param statusCode The HTTP status code to use
+ * @return A new response modifier instance
+ */
 - (nonnull instancetype)initWithStatusCode:(NSInteger)statusCode;
 
-/// Create the response modifier with HTTP Version. Status code defaults to 200.
-/// @param version HTTP Version, nil means "HTTP/1.1".
-/// @note This is for convenience, if you need code to control the logic, use block API instead.
+/**
+ * Create a response modifier that sets a specific HTTP version.
+ * Status code defaults to 200.
+ *
+ * @param version HTTP version string (defaults to "HTTP/1.1" if nil)
+ * @return A new response modifier instance
+ */
 - (nonnull instancetype)initWithVersion:(nullable NSString *)version;
 
-/// Create the response modifier with HTTP Headers. Status code defaults to 200.
-/// @param headers HTTP Headers. Case insensitive according to HTTP/1.1(HTTP/2) standard. The headers will override the same fields from original response.
-/// @note This is for convenience, if you need code to control the logic, use block API instead.
+/**
+ * Create a response modifier that sets specific HTTP headers.
+ * Status code defaults to 200.
+ *
+ * @param headers HTTP headers dictionary (case insensitive per HTTP standards)
+ *                These headers will override matching fields from the original response
+ * @return A new response modifier instance
+ */
 - (nonnull instancetype)initWithHeaders:(nullable NSDictionary<NSString *, NSString *> *)headers;
 
-/// Create the response modifier with HTTP Status Code, Version and Headers.
-/// @param statusCode HTTP Status Code.
-/// @param version HTTP Version, nil means "HTTP/1.1".
-/// @param headers HTTP Headers. Case insensitive according to HTTP/1.1(HTTP/2) standard. The headers will override the same fields from original response.
-/// @note This is for convenience, if you need code to control the logic, use block API instead.
-- (nonnull instancetype)initWithStatusCode:(NSInteger)statusCode version:(nullable NSString *)version headers:(nullable NSDictionary<NSString *, NSString *> *)headers;
+/**
+ * Create a response modifier that sets HTTP status code, version and headers.
+ *
+ * @param statusCode HTTP status code
+ * @param version HTTP version string (defaults to "HTTP/1.1" if nil)
+ * @param headers HTTP headers dictionary (case insensitive per HTTP standards)
+ *                These headers will override matching fields from the original response
+ * @return A new response modifier instance
+ */
+- (nonnull instancetype)initWithStatusCode:(NSInteger)statusCode 
+                                   version:(nullable NSString *)version 
+                                   headers:(nullable NSDictionary<NSString *, NSString *> *)headers;
 
 @end

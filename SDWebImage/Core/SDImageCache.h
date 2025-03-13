@@ -76,7 +76,7 @@ typedef NS_OPTIONS(NSUInteger, SDImageCacheOptions) {
 
 /**
  * SDImageCache maintains a memory cache and a disk cache. Disk cache write operations are performed
- * asynchronous so it doesn’t add unnecessary latency to the UI.
+ * asynchronous so it doesn't add unnecessary latency to the UI.
  */
 @interface SDImageCache : NSObject
 
@@ -335,7 +335,7 @@ typedef NS_OPTIONS(NSUInteger, SDImageCacheOptions) {
  * @param context   A context contains different options to perform specify changes or processes, see `SDWebImageContextOption`. This hold the extra objects which `options` enum can not hold.
  * @param doneBlock The completion block. Will not get called if the operation is cancelled
  *
- * @return a SDImageCacheToken instance containing the cache operation, will callback immediately when cancellederation, will callback immediately when cancelled
+ * @return a SDImageCacheToken instance containing the cache operation, will callback immediately when cancelled
  * @warning If you query with thumbnail cache key, you'd better not pass the thumbnail pixel size context, which is undefined behavior.
  */
 - (nullable SDImageCacheToken *)queryCacheOperationForKey:(nullable NSString *)key options:(SDImageCacheOptions)options context:(nullable SDWebImageContext *)context done:(nullable SDImageCacheQueryCompletionBlock)doneBlock;

@@ -10,19 +10,48 @@
 #import <CoreGraphics/CoreGraphics.h>
 
 /**
- These following graphics context method are provided to easily write cross-platform(AppKit/UIKit) code.
- For UIKit, these methods just call the same method in `UIGraphics.h`. See the documentation for usage.
- For AppKit, these methods use `NSGraphicsContext` to create image context and match the behavior like UIKit.
- @note If you don't care bitmap format (ARGB8888) and just draw image, use `SDGraphicsImageRenderer` instead. It's more performant on RAM usage.`
+ * These graphics context methods provide a cross-platform (AppKit/UIKit) interface for drawing operations.
+ *
+ * - For UIKit: These methods directly map to equivalent methods in `UIGraphics.h`.
+ * - For AppKit: These methods use `NSGraphicsContext` to create image contexts that match UIKit behavior.
+ *
+ * @note For better memory performance when working with ARGB8888 bitmap format, consider using
+ * `SDGraphicsImageRenderer` instead, which is more efficient for RAM usage.
  */
 
-/// Returns the current graphics context.
+/**
+ * Returns the current graphics context.
+ *
+ * @return The current Core Graphics context, or NULL if no context is current.
+ */
 FOUNDATION_EXPORT CGContextRef __nullable SDGraphicsGetCurrentContext(void) CF_RETURNS_NOT_RETAINED;
-/// Creates a bitmap-based graphics context and makes it the current context.
+
+/**
+ * Creates a bitmap-based graphics context and makes it the current context.
+ * This is a convenience method that calls SDGraphicsBeginImageContextWithOptions with default values.
+ *
+ * @param size The size of the bitmap context in points.
+ */
 FOUNDATION_EXPORT void SDGraphicsBeginImageContext(CGSize size);
-/// Creates a bitmap-based graphics context with the specified options.
+
+/**
+ * Creates a bitmap-based graphics context with the specified options and makes it the current context.
+ *
+ * @param size The size of the bitmap context in points.
+ * @param opaque A Boolean value indicating whether the bitmap is opaque.
+ * @param scale The scale factor to apply to the bitmap. Use 0.0 to use the device's main screen scale.
+ */
 FOUNDATION_EXPORT void SDGraphicsBeginImageContextWithOptions(CGSize size, BOOL opaque, CGFloat scale);
-/// Removes the current bitmap-based graphics context from the top of the stack.
+
+/**
+ * Removes the current bitmap-based graphics context from the top of the stack.
+ * Call this method to balance a previous call to SDGraphicsBeginImageContext or SDGraphicsBeginImageContextWithOptions.
+ */
 FOUNDATION_EXPORT void SDGraphicsEndImageContext(void);
-/// Returns an image based on the contents of the current bitmap-based graphics context.
+
+/**
+ * Returns an image based on the contents of the current bitmap-based graphics context.
+ *
+ * @return A new UIImage object or nil if no current bitmap-based context exists.
+ */
 FOUNDATION_EXPORT UIImage * __nullable SDGraphicsGetImageFromCurrentImageContext(void);

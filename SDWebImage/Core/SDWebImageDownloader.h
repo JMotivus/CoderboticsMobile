@@ -16,6 +16,8 @@
 #import "SDWebImageDownloaderDecryptor.h"
 #import "SDImageLoader.h"
 
+#pragma mark - Downloader Options
+
 /// Downloader options
 typedef NS_OPTIONS(NSUInteger, SDWebImageDownloaderOptions) {
     /**
@@ -97,6 +99,8 @@ typedef NS_OPTIONS(NSUInteger, SDWebImageDownloaderOptions) {
     SDWebImageDownloaderMatchAnimatedImageClass = 1 << 12,
 };
 
+#pragma mark - Notifications
+
 /// Posed when URLSessionTask started (`resume` called))
 FOUNDATION_EXPORT NSNotificationName _Nonnull const SDWebImageDownloadStartNotification;
 /// Posed when URLSessionTask get HTTP response (`didReceiveResponse:completionHandler:` called)
@@ -106,8 +110,12 @@ FOUNDATION_EXPORT NSNotificationName _Nonnull const SDWebImageDownloadStopNotifi
 /// Posed when URLSessionTask finished with success  (`didCompleteWithError:` without error)
 FOUNDATION_EXPORT NSNotificationName _Nonnull const SDWebImageDownloadFinishNotification;
 
+#pragma mark - Typedefs
+
 typedef SDImageLoaderProgressBlock SDWebImageDownloaderProgressBlock;
 typedef SDImageLoaderCompletedBlock SDWebImageDownloaderCompletedBlock;
+
+#pragma mark - SDWebImageDownloadToken
 
 /**
  *  A token associated with each download. Can be used to cancel a download
@@ -141,6 +149,7 @@ typedef SDImageLoaderCompletedBlock SDWebImageDownloaderCompletedBlock;
 
 @end
 
+#pragma mark - SDWebImageDownloader
 
 /**
  * Asynchronous downloader dedicated and optimized for image loading.
@@ -309,6 +318,7 @@ typedef SDImageLoaderCompletedBlock SDWebImageDownloaderCompletedBlock;
 
 @end
 
+#pragma mark - SDWebImageDownloader (SDImageLoader)
 
 /**
  SDWebImageDownloader is the built-in image loader conform to `SDImageLoader`. Which provide the HTTP/HTTPS/FTP download, or local file URL using NSURLSession.

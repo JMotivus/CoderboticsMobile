@@ -15,6 +15,9 @@
 #import "SDWebImageCacheSerializer.h"
 #import "SDWebImageOptionsProcessor.h"
 
+/**
+ * Completion block typedefs for external and internal use
+ */
 typedef void(^SDExternalCompletionBlock)(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL);
 
 typedef void(^SDInternalCompletionBlock)(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL);
@@ -67,10 +70,11 @@ typedef void(^SDInternalCompletionBlock)(UIImage * _Nullable image, NSData * _Nu
 /**
  * Controls the complicated logic to mark as failed URLs when download error occur.
  * If the delegate implement this method, we will not use the built-in way to mark URL as failed based on error code;
- @param imageManager The current `SDWebImageManager`
- @param imageURL The url of the image
- @param error The download error for the url
- @return Whether to block this url or not. Return YES to mark this URL as failed.
+ * 
+ * @param imageManager The current `SDWebImageManager`
+ * @param imageURL The url of the image
+ * @param error The download error for the url
+ * @return Whether to block this url or not. Return YES to mark this URL as failed.
  */
 - (BOOL)imageManager:(nonnull SDWebImageManager *)imageManager shouldBlockFailedURL:(nonnull NSURL *)imageURL withError:(nonnull NSError *)error;
 
@@ -85,17 +89,15 @@ typedef void(^SDInternalCompletionBlock)(UIImage * _Nullable image, NSData * _Nu
  * Here is a simple example of how to use SDWebImageManager:
  *
  * @code
-
-SDWebImageManager *manager = [SDWebImageManager sharedManager];
-[manager loadImageWithURL:imageURL
-                  options:0
-                 progress:nil
-                completed:^(UIImage *image, NSData *data, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                    if (image) {
-                        // do something with image
-                    }
-                }];
-
+ * SDWebImageManager *manager = [SDWebImageManager sharedManager];
+ * [manager loadImageWithURL:imageURL
+ *                   options:0
+ *                  progress:nil
+ *                 completed:^(UIImage *image, NSData *data, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+ *                     if (image) {
+ *                         // do something with image
+ *                     }
+ *                 }];
  * @endcode
  */
 @interface SDWebImageManager : NSObject
@@ -116,9 +118,9 @@ SDWebImageManager *manager = [SDWebImageManager sharedManager];
 @property (strong, nonatomic, readonly, nonnull) id<SDImageLoader> imageLoader;
 
 /**
- The image transformer for manager. It's used for image transform after the image load finished and store the transformed image to cache, see `SDImageTransformer`.
- Defaults to nil, which means no transform is applied.
- @note This will affect all the load requests for this manager if you provide. However, you can pass `SDWebImageContextImageTransformer` in context arg to explicitly use that transformer instead.
+ * The image transformer for manager. It's used for image transform after the image load finished and store the transformed image to cache, see `SDImageTransformer`.
+ * Defaults to nil, which means no transform is applied.
+ * @note This will affect all the load requests for this manager if you provide. However, you can pass `SDWebImageContextImageTransformer` in context arg to explicitly use that transformer instead.
  */
 @property (strong, nonatomic, nullable) id<SDImageTransformer> transformer;
 
@@ -129,10 +131,10 @@ SDWebImageManager *manager = [SDWebImageManager sharedManager];
  * URL before to use it as a cache key:
  *
  * @code
- SDWebImageManager.sharedManager.cacheKeyFilter =[SDWebImageCacheKeyFilter cacheKeyFilterWithBlock:^NSString * _Nullable(NSURL * _Nonnull url) {
-    url = [[NSURL alloc] initWithScheme:url.scheme host:url.host path:url.path];
-    return [url absoluteString];
- }];
+ * SDWebImageManager.sharedManager.cacheKeyFilter = [SDWebImageCacheKeyFilter cacheKeyFilterWithBlock:^NSString * _Nullable(NSURL * _Nonnull url) {
+ *     url = [[NSURL alloc] initWithScheme:url.scheme host:url.host path:url.path];
+ *     return [url absoluteString];
+ * }];
  * @endcode
  */
 @property (nonatomic, strong, nullable) id<SDWebImageCacheKeyFilter> cacheKeyFilter;
@@ -143,43 +145,43 @@ SDWebImageManager *manager = [SDWebImageManager sharedManager];
  * @note The `image` arg is nonnull, but when you also provide an image transformer and the image is transformed, the `data` arg may be nil, take attention to this case.
  * @note This method is called from a global queue in order to not to block the main thread.
  * @code
- SDWebImageManager.sharedManager.cacheSerializer = [SDWebImageCacheSerializer cacheSerializerWithBlock:^NSData * _Nullable(UIImage * _Nonnull image, NSData * _Nullable data, NSURL * _Nullable imageURL) {
-    SDImageFormat format = [NSData sd_imageFormatForImageData:data];
-    switch (format) {
-        case SDImageFormatWebP:
-            return image.images ? data : nil;
-        default:
-            return data;
-    }
-}];
+ * SDWebImageManager.sharedManager.cacheSerializer = [SDWebImageCacheSerializer cacheSerializerWithBlock:^NSData * _Nullable(UIImage * _Nonnull image, NSData * _Nullable data, NSURL * _Nullable imageURL) {
+ *     SDImageFormat format = [NSData sd_imageFormatForImageData:data];
+ *     switch (format) {
+ *         case SDImageFormatWebP:
+ *             return image.images ? data : nil;
+ *         default:
+ *             return data;
+ *     }
+ * }];
  * @endcode
  * The default value is nil. Means we just store the source downloaded data to disk cache.
  */
 @property (nonatomic, strong, nullable) id<SDWebImageCacheSerializer> cacheSerializer;
 
 /**
- The options processor is used, to have a global control for all the image request options and context option for current manager.
- @note If you use `transformer`, `cacheKeyFilter` or `cacheSerializer` property of manager, the input context option already apply those properties before passed. This options processor is a better replacement for those property in common usage.
- For example, you can control the global options, based on the URL or original context option like the below code.
- 
- @code
- SDWebImageManager.sharedManager.optionsProcessor = [SDWebImageOptionsProcessor optionsProcessorWithBlock:^SDWebImageOptionsResult * _Nullable(NSURL * _Nullable url, SDWebImageOptions options, SDWebImageContext * _Nullable context) {
-     // Only do animation on `SDAnimatedImageView`
-     if (!context[SDWebImageContextAnimatedImageClass]) {
-        options |= SDWebImageDecodeFirstFrameOnly;
-     }
-     // Do not force decode for png url
-     if ([url.lastPathComponent isEqualToString:@"png"]) {
-        options |= SDWebImageAvoidDecodeImage;
-     }
-     // Always use screen scale factor
-     SDWebImageMutableContext *mutableContext = [NSDictionary dictionaryWithDictionary:context];
-     mutableContext[SDWebImageContextImageScaleFactor] = @(UIScreen.mainScreen.scale);
-     context = [mutableContext copy];
- 
-     return [[SDWebImageOptionsResult alloc] initWithOptions:options context:context];
- }];
- @endcode
+ * The options processor is used, to have a global control for all the image request options and context option for current manager.
+ * @note If you use `transformer`, `cacheKeyFilter` or `cacheSerializer` property of manager, the input context option already apply those properties before passed. This options processor is a better replacement for those property in common usage.
+ * For example, you can control the global options, based on the URL or original context option like the below code.
+ * 
+ * @code
+ * SDWebImageManager.sharedManager.optionsProcessor = [SDWebImageOptionsProcessor optionsProcessorWithBlock:^SDWebImageOptionsResult * _Nullable(NSURL * _Nullable url, SDWebImageOptions options, SDWebImageContext * _Nullable context) {
+ *     // Only do animation on `SDAnimatedImageView`
+ *     if (!context[SDWebImageContextAnimatedImageClass]) {
+ *        options |= SDWebImageDecodeFirstFrameOnly;
+ *     }
+ *     // Do not force decode for png url
+ *     if ([url.lastPathComponent isEqualToString:@"png"]) {
+ *        options |= SDWebImageAvoidDecodeImage;
+ *     }
+ *     // Always use screen scale factor
+ *     SDWebImageMutableContext *mutableContext = [NSDictionary dictionaryWithDictionary:context];
+ *     mutableContext[SDWebImageContextImageScaleFactor] = @(UIScreen.mainScreen.scale);
+ *     context = [mutableContext copy];
+ *
+ *     return [[SDWebImageOptionsResult alloc] initWithOptions:options context:context];
+ * }];
+ * @endcode
  */
 @property (nonatomic, strong, nullable) id<SDWebImageOptionsProcessor> optionsProcessor;
 
@@ -189,14 +191,14 @@ SDWebImageManager *manager = [SDWebImageManager sharedManager];
 @property (nonatomic, assign, readonly, getter=isRunning) BOOL running;
 
 /**
- The default image cache when the manager which is created with no arguments. Such as shared manager or init.
- Defaults to nil. Means using `SDImageCache.sharedImageCache`
+ * The default image cache when the manager which is created with no arguments. Such as shared manager or init.
+ * Defaults to nil. Means using `SDImageCache.sharedImageCache`
  */
 @property (nonatomic, class, nullable) id<SDImageCache> defaultImageCache;
 
 /**
- The default image loader for manager which is created with no arguments. Such as shared manager or init.
- Defaults to nil. Means using `SDWebImageDownloader.sharedDownloader`
+ * The default image loader for manager which is created with no arguments. Such as shared manager or init.
+ * Defaults to nil. Means using `SDWebImageDownloader.sharedDownloader`
  */
 @property (nonatomic, class, nullable) id<SDImageLoader> defaultImageLoader;
 
@@ -284,7 +286,7 @@ SDWebImageManager *manager = [SDWebImageManager sharedManager];
 /**
  * Return the cache key for a given URL and context option.
  * @note The context option like `.thumbnailPixelSize` and `.imageTransformer` will effect the generated cache key, using this if you have those context associated.
-*/
+ */
 - (nullable NSString *)cacheKeyForURL:(nullable NSURL *)url context:(nullable SDWebImageContext *)context;
 
 @end

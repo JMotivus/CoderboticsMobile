@@ -9,18 +9,25 @@
 
 #import "SDWebImageCompat.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
- This category is just use as a convenience method. For more detail control, use methods in `UIImage+MultiFormat.h` or directly use `SDImageCoder`.
+ * This category provides a convenience method for creating UIImage instances from GIF data.
+ * For more detailed control, use methods in `UIImage+MultiFormat.h` or directly use `SDImageCoder`.
  */
 @interface UIImage (GIF)
 
 /**
- Creates an animated UIImage from an NSData.
- This will create animated image if the data is Animated GIF. And will create a static image is the data is Static GIF.
-
- @param data The GIF data
- @return The created image
+ * Creates a UIImage from GIF data.
+ * This method handles both animated and static GIF formats:
+ * - For animated GIF data, it creates an animated UIImage
+ * - For static GIF data, it creates a static UIImage
+ *
+ * @param data The GIF data to create an image from
+ * @return A UIImage created from the GIF data, or nil if creation fails
  */
 + (nullable UIImage *)sd_imageWithGIFData:(nullable NSData *)data;
 
 @end
+
+NS_ASSUME_NONNULL_END

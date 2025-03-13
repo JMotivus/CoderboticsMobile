@@ -10,35 +10,47 @@
 #import "SDWebImageCompat.h"
 
 /**
- This class is used for creating animated images via `animatedImageWithFrames` in `SDImageCoderHelper`.
- @note If you need to specify animated images loop count, use `sd_imageLoopCount` property in `UIImage+Metadata.h`.
+ * This class represents a single frame in an animated image sequence.
+ * Used for creating animated images via `animatedImageWithFrames` in `SDImageCoderHelper`.
+ *
+ * @note If you need to specify animated images loop count, use `sd_imageLoopCount` 
+ * property in `UIImage+Metadata.h`.
  */
 @interface SDImageFrame : NSObject
 
 /**
- The image of current frame. You should not set an animated image.
+ * The image of current frame. You should not set an animated image.
  */
 @property (nonatomic, strong, readonly, nonnull) UIImage *image;
+
 /**
- The duration of current frame to be displayed. The number is seconds but not milliseconds. You should not set this to zero.
+ * The duration of current frame to be displayed in seconds.
+ * This value should not be zero.
  */
 @property (nonatomic, readonly, assign) NSTimeInterval duration;
 
-/// Create a frame instance with specify image and duration
-/// @param image current frame's image
-/// @param duration current frame's duration
-- (nonnull instancetype)initWithImage:(nonnull UIImage *)image duration:(NSTimeInterval)duration;
-
 /**
- Create a frame instance with specify image and duration
-
- @param image current frame's image
- @param duration current frame's duration
- @return frame instance
+ * Create a frame instance with specified image and duration.
+ *
+ * @param image Current frame's image (must not be nil)
+ * @param duration Current frame's duration in seconds (should be positive)
+ * @return A new frame instance
  */
 + (nonnull instancetype)frameWithImage:(nonnull UIImage *)image duration:(NSTimeInterval)duration;
 
+/**
+ * Initialize a frame instance with specified image and duration.
+ *
+ * @param image Current frame's image (must not be nil)
+ * @param duration Current frame's duration in seconds (should be positive)
+ * @return An initialized frame instance
+ */
+- (nonnull instancetype)initWithImage:(nonnull UIImage *)image duration:(NSTimeInterval)duration;
+
+/**
+ * Unavailable initializers
+ */
 - (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new  NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
 @end

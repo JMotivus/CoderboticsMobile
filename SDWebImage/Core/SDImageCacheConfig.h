@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 #import "SDWebImageCompat.h"
 
-/// Image Cache Expire Type
+/**
+ * Image Cache Expire Type - defines which timestamp to use when checking for expiration
+ */
 typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
     /**
      * When the image cache is accessed it will update this value
@@ -30,49 +32,26 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
 };
 
 /**
- The class contains all the config for image cache
- @note This class conform to NSCopying, make sure to add the property in `copyWithZone:` as well.
+ * The class contains all the config for image cache
+ * @note This class conforms to NSCopying, make sure to add the property in `copyWithZone:` as well.
  */
 @interface SDImageCacheConfig : NSObject <NSCopying>
 
 /**
- Gets the default cache config used for shared instance or initialization when it does not provide any cache config. Such as `SDImageCache.sharedImageCache`.
- @note You can modify the property on default cache config, which can be used for later created cache instance. The already created cache instance does not get affected.
+ * Gets the default cache config used for shared instance or initialization when it does not provide any cache config. 
+ * Such as `SDImageCache.sharedImageCache`.
+ * @note You can modify the property on default cache config, which can be used for later created cache instance. 
+ * The already created cache instance does not get affected.
  */
 @property (nonatomic, class, readonly, nonnull) SDImageCacheConfig *defaultCacheConfig;
+
+#pragma mark - Disk Cache Properties
 
 /**
  * Whether or not to disable iCloud backup
  * Defaults to YES.
  */
 @property (assign, nonatomic) BOOL shouldDisableiCloud;
-
-/**
- * Whether or not to use memory cache
- * @note When the memory cache is disabled, the weak memory cache will also be disabled.
- * Defaults to YES.
- */
-@property (assign, nonatomic) BOOL shouldCacheImagesInMemory;
-
-/*
- * The option to control weak memory cache for images. When enable, `SDImageCache`'s memory cache will use a weak maptable to store the image at the same time when it stored to memory, and get removed at the same time.
- * However when memory warning is triggered, since the weak maptable does not hold a strong reference to image instance, even when the memory cache itself is purged, some images which are held strongly by UIImageViews or other live instances can be recovered again, to avoid later re-query from disk cache or network. This may be helpful for the case, for example, when app enter background and memory is purged, cause cell flashing after re-enter foreground.
- * When enabling this option, we will sync back the image from weak maptable to strong cache during next time top level `sd_setImage` function call.
- * Defaults to NO (YES before 5.12.0 version). You can change this option dynamically.
- */
-@property (assign, nonatomic) BOOL shouldUseWeakMemoryCache;
-
-/**
- * Whether or not to remove the expired disk data when application entering the background. (Not works for macOS)
- * Defaults to YES.
- */
-@property (assign, nonatomic) BOOL shouldRemoveExpiredDataWhenEnterBackground;
-
-/**
- * Whether or not to remove the expired disk data when application been terminated. This operation is processed in sync to ensure clean up.
- * Defaults to YES.
- */
-@property (assign, nonatomic) BOOL shouldRemoveExpiredDataWhenTerminate;
 
 /**
  * The reading options while reading cache from disk.
@@ -101,6 +80,44 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
 @property (assign, nonatomic) NSUInteger maxDiskSize;
 
 /**
+ * The attribute which the clear cache will be checked against when clearing the disk cache
+ * Default is Access Date
+ */
+@property (assign, nonatomic) SDImageCacheConfigExpireType diskCacheExpireType;
+
+/**
+ * The custom disk cache class. Provided class instance must conform to `SDDiskCache` protocol to allow usage.
+ * Defaults to built-in `SDDiskCache` class.
+ * @note This value does not support dynamic changes. Which means further modification on this value after cache initialized has no effect.
+ */
+@property (assign, nonatomic, nonnull) Class diskCacheClass;
+
+#pragma mark - Memory Cache Properties
+
+/**
+ * Whether or not to use memory cache
+ * @note When the memory cache is disabled, the weak memory cache will also be disabled.
+ * Defaults to YES.
+ */
+@property (assign, nonatomic) BOOL shouldCacheImagesInMemory;
+
+/**
+ * Whether or not to use weak memory cache for images. When enabled, `SDImageCache`'s memory cache will use a weak maptable 
+ * to store the image at the same time when it stored to memory, and get removed at the same time.
+ * 
+ * When memory warning is triggered, since the weak maptable does not hold a strong reference to image instance, 
+ * even when the memory cache itself is purged, some images which are held strongly by UIImageViews or other live instances 
+ * can be recovered again, to avoid later re-query from disk cache or network. This may be helpful for the case, for example, 
+ * when app enter background and memory is purged, cause cell flashing after re-enter foreground.
+ * 
+ * When enabling this option, we will sync back the image from weak maptable to strong cache during next time top level 
+ * `sd_setImage` function call.
+ * 
+ * Defaults to NO (YES before 5.12.0 version). You can change this option dynamically.
+ */
+@property (assign, nonatomic) BOOL shouldUseWeakMemoryCache;
+
+/**
  * The maximum "total cost" of the in-memory image cache. The cost function is the bytes size held in memory.
  * @note The memory cost is bytes size in memory, but not simple pixels count. For common ARGB8888 image, one pixel is 4 bytes (32 bits).
  * Defaults to 0. Which means there is no memory cost limit.
@@ -113,11 +130,28 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
  */
 @property (assign, nonatomic) NSUInteger maxMemoryCount;
 
-/*
- * The attribute which the clear cache will be checked against when clearing the disk cache
- * Default is Access Date
+/**
+ * The custom memory cache class. Provided class instance must conform to `SDMemoryCache` protocol to allow usage.
+ * Defaults to built-in `SDMemoryCache` class.
+ * @note This value does not support dynamic changes. Which means further modification on this value after cache initialized has no effect.
  */
-@property (assign, nonatomic) SDImageCacheConfigExpireType diskCacheExpireType;
+@property (assign, nonatomic, nonnull) Class memoryCacheClass;
+
+#pragma mark - Lifecycle Management Properties
+
+/**
+ * Whether or not to remove the expired disk data when application entering the background. (Not works for macOS)
+ * Defaults to YES.
+ */
+@property (assign, nonatomic) BOOL shouldRemoveExpiredDataWhenEnterBackground;
+
+/**
+ * Whether or not to remove the expired disk data when application been terminated. This operation is processed in sync to ensure clean up.
+ * Defaults to YES.
+ */
+@property (assign, nonatomic) BOOL shouldRemoveExpiredDataWhenTerminate;
+
+#pragma mark - Advanced Properties
 
 /**
  * The custom file manager for disk cache. Pass nil to let disk cache choose the proper file manager.
@@ -128,26 +162,17 @@ typedef NS_ENUM(NSUInteger, SDImageCacheConfigExpireType) {
 @property (strong, nonatomic, nullable) NSFileManager *fileManager;
 
 /**
- * The dispatch queue attr for ioQueue. You can config the QoS and concurrent/serial to internal IO queue. The ioQueue is used by SDImageCache to access read/write for disk data.
- * Defaults we use `DISPATCH_QUEUE_SERIAL`(NULL) under iOS 10, `DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL` above and equal iOS 10, using serial dispatch queue is to ensure single access for disk data. It's safe but may be slow.
+ * The dispatch queue attr for ioQueue. You can config the QoS and concurrent/serial to internal IO queue. 
+ * The ioQueue is used by SDImageCache to access read/write for disk data.
+ * 
+ * Defaults we use `DISPATCH_QUEUE_SERIAL`(NULL) under iOS 10, `DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL` above and equal iOS 10, 
+ * using serial dispatch queue is to ensure single access for disk data. It's safe but may be slow.
+ * 
  * @note You can override this to use `DISPATCH_QUEUE_CONCURRENT`, use concurrent queue.
- * @warning **MAKE SURE** to keep `diskCacheWritingOptions` to use `NSDataWritingAtomic`, or concurrent queue may cause corrupted disk data (because multiple threads read/write same file without atomic is not IO-safe).
+ * @warning **MAKE SURE** to keep `diskCacheWritingOptions` to use `NSDataWritingAtomic`, or concurrent queue may cause corrupted 
+ * disk data (because multiple threads read/write same file without atomic is not IO-safe).
  * @note This value does not support dynamic changes. Which means further modification on this value after cache initialized has no effect.
  */
 @property (strong, nonatomic, nullable) dispatch_queue_attr_t ioQueueAttributes;
-
-/**
- * The custom memory cache class. Provided class instance must conform to `SDMemoryCache` protocol to allow usage.
- * Defaults to built-in `SDMemoryCache` class.
- * @note This value does not support dynamic changes. Which means further modification on this value after cache initialized has no effect.
- */
-@property (assign, nonatomic, nonnull) Class memoryCacheClass;
-
-/**
- * The custom disk cache class. Provided class instance must conform to `SDDiskCache` protocol to allow usage.
- * Defaults to built-in `SDDiskCache` class.
- * @note This value does not support dynamic changes. Which means further modification on this value after cache initialized has no effect.
- */
-@property (assign ,nonatomic, nonnull) Class diskCacheClass;
 
 @end
